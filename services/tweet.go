@@ -7,6 +7,7 @@ import (
 	"Twitta/pkg/models"
 	"Twitta/pkg/utils"
 	"errors"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -133,5 +134,88 @@ func (*Service) TweetFavoriteList(c *gin.Context) ([]*forms.TweetListResponse, e
 	if err != nil {
 		return nil, err
 	}
-	tweetIds := make()
+	tweetIds := make([]string, 0, len(favorites))
+	for _, favorite := range favorites {
+		tweetIds = append(tweetIds, favorite.TweetId)
+	}
+	tweets := make([]*models.Tweet, 0)
+	err = models.NewTweet().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": tweetIds}}, &tweets)
+	if err != nil {
+		return nil, err
+	}
+	userIds := make([]string, 0, len(tweets))
+	for _, tweet := range tweets {
+		userIds = append(userIds, tweet.UserID)
+	}
+	users := make([]*models.User, 0)
+	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
+	if err != nil {
+		return nil, err
+	}
+	userIdToInfoMaps := make(map[string]struct {
+		Username string
+		Avatar   string
+	}, len(users))
+	for _, user := range users {
+		userIdToInfoMaps[user.ID] = struct {
+			Username string
+			Avatar   string
+		}{Username: user.Username, Avatar: user.Avatar}
+	}
+	// 封装数据返回
+	tweetFavoriteResponse := make([]*forms.TweetListResponse, 0, len(tweets))
+	for _, tweet := range tweets {
+		tweetFavoriteResponse = append(tweetFavoriteResponse, &forms.TweetListResponse{
+			UserId:       tweet.UserID,
+			Username:     userIdToInfoMaps[tweet.UserID].Username,
+			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
+			TweetId:      tweet.ID,
+			Title:        tweet.Title,
+			Content:      tweet.Content,
+			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			ThumbCount:   tweet.ThumbCount,
+			CommentCount: tweet.CommentCount,
+		})
+	}
+	return tweetFavoriteResponse, nil
+}
+
+func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) error {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	// 查询此用户有无收藏此文章
+	favorite := &models.Favorite{}
+	err := models.NewFavorite().FindOne(c, db, constants.Mongo, bson.M{}, favorite)
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+	if err == nil {
+		return errors.New("您已收藏此推文")
+	}
+	data := &models.Favorite{
+		ID: utils.UUID(),
+		BaseModel: models.BaseModel{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+		UserId:  user.ID,
+		TweetId: params.Id,
+	}
+	_, err = models.NewFavorite().InsertOne(c, db, constants.Mongo, data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	_, err := models.NewFavorite().Delete(c, db, constants.Mongo, bson.M{"user_id": user.ID, "_id": id})
+	if err != nil {
+		return err
+	}
+	return nil
 }
