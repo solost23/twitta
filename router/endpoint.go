@@ -46,5 +46,13 @@ func initAuthTweetRouter(group *gin.RouterGroup) {
 		tweet.POST("", tweetSend)
 		// 删除推文
 		tweet.DELETE(":id", tweetDelete)
+		// 收藏推文
+		tweet.POST("favorite", tweetFavorite)
+		// 取消收藏推文
+		tweet.DELETE("favorite/:id", tweetFavoriteDelete)
+		// 展示当前用户收藏推文
+		tweet.GET("favorite", tweetFavoriteList)
+		// 展示当前用户的推文
+		tweet.GET("own", tweetOwnList)
 	}
 }

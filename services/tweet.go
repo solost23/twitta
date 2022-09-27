@@ -97,3 +97,41 @@ func (*Service) TweetList(c *gin.Context) ([]*forms.TweetListResponse, error) {
 	}
 	return tweetListResponse, nil
 }
+
+func (*Service) TweetOwnList(c *gin.Context) ([]*forms.TweetListResponse, error) {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	tweets := make([]*models.Tweet, 0)
+	err := models.NewTweet().Find(c, db, constants.Mongo, bson.M{"user_id": user.ID}, &tweets)
+	if err != nil {
+		return nil, err
+	}
+	tweetOwnList := make([]*forms.TweetListResponse, 0, len(tweets))
+	for _, tweet := range tweets {
+		tweetOwnList = append(tweetOwnList, &forms.TweetListResponse{
+			UserId:       user.ID,
+			Username:     user.Username,
+			Avatar:       user.Avatar,
+			TweetId:      tweet.ID,
+			Title:        tweet.Title,
+			Content:      tweet.Content,
+			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			ThumbCount:   tweet.ThumbCount,
+			CommentCount: tweet.CommentCount,
+		})
+	}
+	return tweetOwnList, nil
+}
+
+func (*Service) TweetFavoriteList(c *gin.Context) ([]*forms.TweetListResponse, error) {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	favorites := make([]*models.Favorite, 0)
+	err := models.NewFavorite().Find(c, db, constants.Mongo, bson.M{"user_id": user.ID}, &favorites)
+	if err != nil {
+		return nil, err
+	}
+	tweetIds := make()
+}

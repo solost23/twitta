@@ -17,3 +17,7 @@ type TweetListResponse struct {
 	ThumbCount   int64  `json:"thumbCount"`
 	CommentCount int64  `json:"commentCount"`
 }
+
+type TweetFavoriteForm struct {
+	Id string `json:"id"`
+}
