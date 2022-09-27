@@ -1,0 +1,27 @@
+version: "1.0.1"
+debug_mode: "debug"
+addr: ":6565"
+time_location: "Asia/Chongqing"
+
+mongo:
+  hosts:
+    - "127.0.0.1:27017"
+  auth_source: ""
+  username: ""
+  password: ""
+  timeout: 30
+
+redis:
+  addr: "127.0.0.1:6379"
+
+minio:
+  end_point: "127.0.0.1:9000"
+  access_key_id: "minioadmin"
+  secret_access_key: "minioadmin"
+  user_ssl: false
+
+jwt:
+  key: "ajgiengijheiganege"
+  duration: 2678400
+
+
