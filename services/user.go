@@ -26,7 +26,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 	db := global.DB
 
 	user := models.NewUser()
-	err := user.FindOne(c, db, constants.Mongo, user.TableName(), bson.M{"username": params.Username}, user)
+	err := user.FindOne(c, db, constants.Mongo, bson.M{"username": params.Username}, user)
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		FansCount: 0,
 		Disabled:  0,
 	}
-	_, err = user.InsertOne(c, db, constants.Mongo, user.TableName(), data)
+	_, err = user.InsertOne(c, db, constants.Mongo, data)
 	if err != nil {
 		return err
 	}
@@ -69,12 +69,15 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 	db := global.DB
 
 	user := &models.User{}
-	err := user.FindOne(c, db, constants.Mongo, user.TableName(), bson.M{"username": params.Username}, user)
+	err := user.FindOne(c, db, constants.Mongo, bson.M{"username": params.Username}, user)
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
 	if params.Username != user.Username || utils.NewMd5(params.Password, constants.Secret) != user.Password {
 		return nil, errors.New("用户名或密码错误")
+	}
+	if user.Disabled == 1 {
+		return nil, errors.New("您的账户已被禁用，请联系管理员")
 	}
 	// 区分两种设备 分别是web和mobile
 	var redisPrefix string
@@ -114,7 +117,7 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 	rdb.Set(c, key, token, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 	rdb.Set(c, constants.RedisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 
-	_, err = user.Update(c, db, constants.Mongo, user.TableName(), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last-login-time", time.Now()}}}})
+	_, err = user.Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
 	if err != nil {
 		return nil, err
 	}

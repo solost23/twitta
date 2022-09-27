@@ -19,10 +19,16 @@ func initNoAuthRouter(group *gin.RouterGroup) {
 	group.POST("register", register)
 	group.POST("register/avatar", uploadAvatar)
 	group.POST("login", login)
+
+	// 展示所有推文
+	group.GET("tweet", tweetList)
 }
 
 func initAuthRouter(group *gin.RouterGroup) {
+	// 用户相关
 	initAuthUserRouter(group)
+	// 推文相关
+	initAuthTweetRouter(group)
 }
 
 func initAuthUserRouter(group *gin.RouterGroup) {
@@ -30,5 +36,15 @@ func initAuthUserRouter(group *gin.RouterGroup) {
 	{
 		// 注销用户
 		user.POST("logout", logout)
+	}
+}
+
+func initAuthTweetRouter(group *gin.RouterGroup) {
+	tweet := group.Group("tweet")
+	{
+		// 发送推文
+		tweet.POST("", tweetSend)
+		// 删除推文
+		tweet.DELETE(":id", tweetDelete)
 	}
 }
