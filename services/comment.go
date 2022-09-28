@@ -101,7 +101,7 @@ func (*Service) CommentThumbDelete(c *gin.Context, id string) error {
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
-	if err == nil {
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return errors.New("您已经取消赞，不可重复取消")
 	}
 	_, err = models.NewComment().Delete(c, db, constants.Mongo, bson.M{"type": 0, "user_id": user.ID, "tweet_id": id})
@@ -133,6 +133,34 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 		Type:    1,
 	}
 	_, err := models.NewComment().InsertOne(c, db, constants.Mongo, &data)
+	if err != nil {
+		return err
+	}
+	_, err = models.NewTweet().Update(c, db, constants.Mongo, bson.M{"_id": id}, bson.M{"$inc": bson.M{"comment_count": 1}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (*Service) CommentDelete(c *gin.Context, id string) error {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	// 查询是否存在此评论
+	comment := &models.Comment{}
+	err := models.NewComment().FindOne(c, db, constants.Mongo, bson.M{"_id": id, "type": 1, "user_id": user.ID}, &comment)
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
+		return errors.New("您已经删除此评论，不可重复删除")
+	}
+	_, err = models.NewComment().Delete(c, db, constants.Mongo, bson.M{"_id": id, "type": 1, "user_id": user.ID})
+	if err != nil {
+		return err
+	}
+	_, err = models.NewTweet().Update(c, db, constants.Mongo, bson.M{"_id": comment.TweetId}, bson.M{"$inc": bson.M{"comment_count": -1}})
 	if err != nil {
 		return err
 	}

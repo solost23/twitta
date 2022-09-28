@@ -117,5 +117,7 @@ func initCommentRouter(group *gin.RouterGroup) {
 		comment.DELETE(":id/thumb", commentThumbDelete)
 		// 用户评论推文
 		comment.POST(":id", commentInsert)
+		// 用户删除评论
+		comment.DELETE(":id", commentDelete)
 	}
 }

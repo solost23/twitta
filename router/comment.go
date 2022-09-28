@@ -65,3 +65,16 @@ func commentInsert(c *gin.Context) {
 	}
 	response.MessageSuccess(c, "成功", nil)
 }
+
+func commentDelete(c *gin.Context) {
+	UIdForm := &utils.UIdForm{}
+	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	if err := services.NewService().CommentDelete(c, UIdForm.Id); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.MessageSuccess(c, "成功", nil)
+}
