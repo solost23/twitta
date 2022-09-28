@@ -10,6 +10,7 @@ import (
 	"Twitta/pkg/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"mime/multipart"
 	"time"
 
@@ -150,4 +151,47 @@ func (s *Service) Logout(c *gin.Context, params *forms.LogoutForm) error {
 	}
 	rdb.Del(c, constants.RedisPrefix+token)
 	return nil
+}
+
+func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
+	db := global.DB
+	user := utils.GetUser(c)
+
+	update := bson.M{
+		"$set": bson.M{
+			"username":  params.Username,
+			"nickname":  params.Nickname,
+			"avatar":    params.Avatar,
+			"introduce": params.Introduce,
+		},
+	}
+	_, err := models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, update)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse, error) {
+	db := global.DB
+
+	user := &models.User{}
+	err := models.NewUser().FindOne(c, db, constants.Mongo, bson.M{"_id": id}, &user)
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, err
+	}
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, errors.New(fmt.Sprintf("不存在此用户"))
+	}
+	userDetailResponse := &forms.UserDetailResponse{
+		UserId:      user.ID,
+		Username:    user.Username,
+		Nickname:    user.Nickname,
+		Avatar:      user.Avatar,
+		Introduce:   user.Introduce,
+		WechatCount: user.WechatCount,
+		FansCount:   user.FansCount,
+		CreatedAt:   user.CreatedAt.Format(constants.TimeFormat),
+	}
+	return userDetailResponse, nil
 }

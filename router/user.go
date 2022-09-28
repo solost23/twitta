@@ -63,3 +63,31 @@ func logout(c *gin.Context) {
 	}
 	response.MessageSuccess(c, "成功", nil)
 }
+
+func userUpdate(c *gin.Context) {
+	params := &forms.UserUpdateForm{}
+	if err := utils.DefaultGetValidParams(c, params); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	if err := services.NewService().UserUpdate(c, params); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.MessageSuccess(c, "成功", nil)
+}
+
+func userDetail(c *gin.Context) {
+	UIdForm := &utils.UIdForm{}
+	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	result, err := services.NewService().UserDetail(c, UIdForm.Id)
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+
+	response.Success(c, result)
+}

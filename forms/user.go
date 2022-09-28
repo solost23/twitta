@@ -26,3 +26,21 @@ type LoginResponse struct {
 type LogoutForm struct {
 	Device string `json:"device" comment:"设备类型" binding:"required,oneof=ios android web"`
 }
+
+type UserUpdateForm struct {
+	Username  string `json:"username" binding:"required"`
+	Nickname  string `json:"nickname"`
+	Avatar    string `json:"avatar"`
+	Introduce string `json:"introduce"`
+}
+
+type UserDetailResponse struct {
+	UserId      string `json:"userId"`
+	Username    string `json:"username"`
+	Nickname    string `json:"nickname"`
+	Avatar      string `json:"avatar"`
+	Introduce   string `json:"introduce"`
+	WechatCount int64  `json:"whatCount"`
+	FansCount   int64  `json:"fansCount"`
+	CreatedAt   string `json:"createdAt"`
+}

@@ -2,7 +2,6 @@ package router
 
 import (
 	"Twitta/pkg/middlewares"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,6 +42,10 @@ func initAuthUserRouter(group *gin.RouterGroup) {
 	{
 		// 注销用户
 		user.POST("logout", logout)
+		// 编辑个人资料(自己用)
+		user.PUT("", userUpdate)
+		// 展示用户资料（自己和他人都可以用）
+		user.GET(":id", userDetail)
 	}
 }
 
