@@ -34,7 +34,8 @@ func initAuthRouter(group *gin.RouterGroup) {
 	initAuthChatRouter(group)
 	// 关注-粉丝相关
 	initFansRouter(group)
-
+	// 点赞-评论相关
+	initCommentRouter(group)
 }
 
 func initAuthUserRouter(group *gin.RouterGroup) {
@@ -102,5 +103,19 @@ func initFansRouter(group *gin.RouterGroup) {
 		fan.POST(":id", whatUser)
 		// 取消关注
 		fan.DELETE(":id", whatUserDelete)
+	}
+}
+
+func initCommentRouter(group *gin.RouterGroup) {
+	comment := group.Group("comment")
+	{
+		// 推文评论列表
+		comment.GET(":id", commentList)
+		// 用户点赞推文
+		comment.POST(":id/thumb", commentThumb)
+		// 用户取消点赞推文
+		comment.DELETE(":id/thumb", commentThumbDelete)
+		// 用户评论推文
+		comment.POST(":id", commentInsert)
 	}
 }
