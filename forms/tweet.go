@@ -19,5 +19,5 @@ type TweetListResponse struct {
 }
 
 type TweetFavoriteForm struct {
-	Id string `json:"id"`
+	Id string `json:"id" binding:"required"`
 }

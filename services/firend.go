@@ -68,6 +68,7 @@ func (*Service) FriendApplicationSend(c *gin.Context, params *forms.FriendApplic
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
+	fmt.Println(user.ID, params.UserId)
 	var msgType uint = 0
 	if err == nil {
 		// 已经是朋友-此为朋友私信
@@ -95,6 +96,9 @@ func (*Service) FriendApplicationAccept(c *gin.Context, id string) error {
 	db := global.DB
 	user := utils.GetUser(c)
 
+	if user.ID == id {
+		return errors.New(fmt.Sprintf("自己和自己不可能成为朋友"))
+	}
 	// 查询此人是否已经是我的朋友，如果不是，添加到朋友表，否则返回错误
 	friend := &models.Friend{}
 	err := models.NewFriend().FindOne(c, db, constants.Mongo, bson.M{"user_id": user.ID, "friend_id": id}, &friend)
@@ -104,16 +108,30 @@ func (*Service) FriendApplicationAccept(c *gin.Context, id string) error {
 	if err == nil {
 		return errors.New(fmt.Sprintf("此人已经是您的朋友，不可重复通过申请"))
 	}
-	data := &models.Friend{
-		UserId:   user.ID,
-		FriendId: id,
-	}
-	_, err = models.NewFriend().InsertOne(c, db, constants.Mongo, data)
+	datas := []interface{}{
+		&models.Friend{
+			BaseModel: models.BaseModel{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+			ID:       utils.UUID(),
+			UserId:   user.ID,
+			FriendId: id,
+		}, &models.Friend{
+			BaseModel: models.BaseModel{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+			ID:       utils.UUID(),
+			UserId:   id,
+			FriendId: user.ID,
+		}}
+	_, err = models.NewFriend().InsertMany(c, db, constants.Mongo, datas)
 	if err != nil {
 		return err
 	}
 	// 修改私信表记录状态
-	_, err = models.NewLogPrivateLatter().Update(c, db, constants.Mongo, bson.M{"user_id": id, "target_id": user.ID, "type": 0}, bson.M{"type": bson.M{"$set": 1}})
+	_, err = models.NewLogPrivateLatter().Update(c, db, constants.Mongo, bson.M{"user_id": id, "target_id": user.ID, "type": 0}, bson.M{"$set": bson.M{"type": 1}})
 	if err != nil {
 		return err
 	}
@@ -133,7 +151,7 @@ func (*Service) FriendApplicationReject(c *gin.Context, id string) error {
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return errors.New(fmt.Sprintf("此私信记录不存在"))
 	}
-	_, err = models.NewLogPrivateLatter().Update(c, db, constants.Mongo, bson.M{"user_id": id, "target_id": user.ID, "type": 0}, bson.M{"type": bson.M{"$set": 2}})
+	_, err = models.NewLogPrivateLatter().Update(c, db, constants.Mongo, bson.M{"user_id": id, "target_id": user.ID, "type": 0}, bson.M{"$set": bson.M{"type": 2}})
 	if err != nil {
 		return err
 	}
@@ -144,12 +162,23 @@ func (*Service) FriendDelete(c *gin.Context, id string) error {
 	db := global.DB
 	user := utils.GetUser(c)
 
+	if user.ID == id {
+		return errors.New(fmt.Sprintf("不能删除自己"))
+	}
 	_, err := models.NewFriend().Delete(c, db, constants.Mongo, bson.M{"user_id": user.ID, "friend_id": id})
+	if err != nil {
+		return err
+	}
+	_, err = models.NewFriend().Delete(c, db, constants.Mongo, bson.M{"user_id": id, "friend_id": user.ID})
 	if err != nil {
 		return err
 	}
 	// 删除此朋友的所有申请记录以及聊天内容
 	_, err = models.NewLogPrivateLatter().Delete(c, db, constants.Mongo, bson.M{"user_id": id, "target_id": user.ID})
+	if err != nil {
+		return err
+	}
+	_, err = models.NewLogPrivateLatter().Delete(c, db, constants.Mongo, bson.M{"target_id": id, "user_id": id})
 	if err != nil {
 		return err
 	}

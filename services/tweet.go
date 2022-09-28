@@ -186,7 +186,7 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 
 	// 查询此用户有无收藏此文章
 	favorite := &models.Favorite{}
-	err := models.NewFavorite().FindOne(c, db, constants.Mongo, bson.M{}, favorite)
+	err := models.NewFavorite().FindOne(c, db, constants.Mongo, bson.M{"user_id": user.ID, "tweet_id": params.Id}, favorite)
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
