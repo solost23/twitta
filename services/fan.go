@@ -103,6 +103,15 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	// 将目标用户的粉丝数 +1, 源用户的关注数量 +1
+	_, err = models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": 1}})
+	if err != nil {
+		return err
+	}
+	_, err = models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": 1}})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -111,6 +120,15 @@ func (*Service) WhatUserDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
 	_, err := models.NewFan().Delete(c, db, constants.Mongo, bson.M{"user_id": user.ID, "target_id": id})
+	if err != nil {
+		return err
+	}
+	// 将目标用户的粉丝数量 -1, 源用户的关注数量 -1
+	_, err = models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": -1}})
+	if err != nil {
+		return err
+	}
+	_, err = models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": -1}})
 	if err != nil {
 		return err
 	}

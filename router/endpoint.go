@@ -94,7 +94,7 @@ func initFansRouter(group *gin.RouterGroup) {
 		// 个人粉丝列表
 		fan.GET("", fanList)
 		// 个人关注列表
-		fan.GET("", whatList)
+		fan.GET("what", whatList)
 		// 关注某人
 		fan.POST(":id", whatUser)
 		// 取消关注
