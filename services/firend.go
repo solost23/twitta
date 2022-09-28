@@ -19,7 +19,7 @@ func (*Service) FriendApplicationList(c *gin.Context) ([]*forms.FriendApplicatio
 	user := utils.GetUser(c)
 
 	logPrivateLatters := make([]*models.LogPrivateLatter, 0)
-	err := models.NewLogPrivateLatter().Find(c, db, constants.Mongo, bson.M{"target_id": user.ID}, &logPrivateLatters)
+	err := models.NewLogPrivateLatter().Find(c, db, constants.Mongo, bson.M{"target_id": user.ID, "type": bson.M{"$in": []uint{0, 1, 2}}}, &logPrivateLatters)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +60,9 @@ func (*Service) FriendApplicationSend(c *gin.Context, params *forms.FriendApplic
 	db := global.DB
 	user := utils.GetUser(c)
 
+	if user.ID == params.UserId {
+		return errors.New(fmt.Sprintf("不能对自己发申请"))
+	}
 	// 发送申请有限制
 	// 如果此人已经是朋友，那么所发内容都是私信
 	// 如果此人不是朋友，那么所发内容为申请信息
