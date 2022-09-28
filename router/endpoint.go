@@ -89,5 +89,15 @@ func initAuthChatRouter(group *gin.RouterGroup) {
 }
 
 func initFansRouter(group *gin.RouterGroup) {
-
+	fan := group.Group("fan")
+	{
+		// 个人粉丝列表
+		fan.GET("", fanList)
+		// 个人关注列表
+		fan.GET("", whatList)
+		// 关注某人
+		fan.POST(":id", whatUser)
+		// 取消关注
+		fan.DELETE(":id", whatUserDelete)
+	}
 }
