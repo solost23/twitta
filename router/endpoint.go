@@ -29,6 +29,8 @@ func initAuthRouter(group *gin.RouterGroup) {
 	initAuthUserRouter(group)
 	// 推文相关
 	initAuthTweetRouter(group)
+	// 交友相关
+	initAuthFriendRouter(group)
 }
 
 func initAuthUserRouter(group *gin.RouterGroup) {
@@ -54,5 +56,21 @@ func initAuthTweetRouter(group *gin.RouterGroup) {
 		tweet.GET("favorite", tweetFavoriteList)
 		// 展示当前用户的推文
 		tweet.GET("own", tweetOwnList)
+	}
+}
+
+func initAuthFriendRouter(group *gin.RouterGroup) {
+	friend := group.Group("friend")
+	{
+		// 发送好友申请
+		friend.POST("", friendApplicationSend)
+		// 通过好友申请
+		friend.PUT(":id/accept", friendApplicationAccept)
+		// 拒绝好友申请
+		friend.PUT(":id/reject", friendApplicationReject)
+		// 好友申请列表
+		friend.GET("", friendApplicationList)
+		// 删除好友
+		friend.DELETE(":id", friendDelete)
 	}
 }
