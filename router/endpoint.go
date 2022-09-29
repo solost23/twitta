@@ -7,6 +7,8 @@ import (
 
 func InitRouter() *gin.Engine {
 	router := gin.Default()
+	// 记录日志
+	router.Use(middlewares.RequestLog())
 	group := router.Group("api")
 	initNoAuthRouter(group)
 	group.Use(middlewares.JWTAuth())
