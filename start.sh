@@ -12,9 +12,13 @@ echo -e "---step3: 更改权限---"
 chmod -R 777 ./build/start
 echo -e "更改权限完成"
 
-echo -e "$---step4:杀掉进程并且运行---"
+echo -e "---step4: 启动项目---"
 i1=`ps -ef|grep -E "./build/start"|grep -v grep|awk '{print $2}'`
-echo -e "杀掉进程$i1"
-kill 9 $i1 && ./build/start >/dev/null 2>&1 &
+if (( $i1 > 0 ))
+then
+  echo -e "杀掉进程$i1"
+  kill 9 $i1
+fi
+nohup ./build/start >/dev/null 2>&1 &
 i2=`ps -ef|grep -E "./build/start"|grep -v grep|awk '{print $2}'`
 echo -e "****部署成功,部署的进程ID为:$i2****"
