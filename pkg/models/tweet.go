@@ -13,8 +13,8 @@ type Tweet struct {
 	UserID       string `bson:"user_id"`
 	Title        string `bson:"title"`
 	Content      string `bson:"content"`
-	ThumbCount   int64  `bson:"thumbCount"`
-	CommentCount int64  `bson:"commentCount"`
+	ThumbCount   int64  `bson:"thumb_count"`
+	CommentCount int64  `bson:"comment_count"`
 }
 
 func NewTweet() Interface {
