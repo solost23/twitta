@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"mime/multipart"
 	"time"
 
@@ -194,4 +195,29 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 		CreatedAt:   user.CreatedAt.Format(constants.TimeFormat),
 	}
 	return userDetailResponse, nil
+}
+
+func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.UserDetailResponse, error) {
+	db := global.DB
+
+	// 直接搜索
+	users := make([]*models.User, 0)
+	err := models.NewUser().Find(c, db, constants.Mongo, bson.M{"username": primitive.Regex{Pattern: params.Keyword, Options: "i"}}, &users)
+	if err != nil {
+		return nil, err
+	}
+	userSearchResponse := make([]*forms.UserDetailResponse, 0, len(users))
+	for _, user := range users {
+		userSearchResponse = append(userSearchResponse, &forms.UserDetailResponse{
+			UserId:      user.ID,
+			Username:    user.Username,
+			Nickname:    user.Nickname,
+			Avatar:      user.Avatar,
+			Introduce:   user.Introduce,
+			WechatCount: user.WechatCount,
+			FansCount:   user.FansCount,
+			CreatedAt:   user.CreatedAt.Format(constants.TimeFormat),
+		})
+	}
+	return userSearchResponse, nil
 }

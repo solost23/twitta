@@ -91,3 +91,18 @@ func userDetail(c *gin.Context) {
 
 	response.Success(c, result)
 }
+
+func userSearch(c *gin.Context) {
+	params := &forms.SearchForm{}
+	if err := utils.DefaultGetValidParams(c, params); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	result, err := services.NewService().UserSearch(c, params)
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+
+	response.Success(c, result)
+}

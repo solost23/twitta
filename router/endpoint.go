@@ -21,6 +21,10 @@ func initNoAuthRouter(group *gin.RouterGroup) {
 
 	// 展示所有推文
 	group.GET("tweet", tweetList)
+	// 用户搜索
+	group.POST("user/search", userSearch)
+	// 推文搜索
+	group.POST("tweet/search", tweetSearch)
 }
 
 func initAuthRouter(group *gin.RouterGroup) {

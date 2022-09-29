@@ -7,6 +7,7 @@ import (
 	"Twitta/pkg/models"
 	"Twitta/pkg/utils"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 
@@ -218,4 +219,49 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 		return err
 	}
 	return nil
+}
+
+func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.TweetListResponse, error) {
+	db := global.DB
+
+	tweets := make([]*models.Tweet, 0)
+	err := models.NewTweet().Find(c, db, constants.Mongo, bson.M{"title": primitive.Regex{Pattern: params.Keyword, Options: "i"}}, &tweets)
+	if err != nil {
+		return nil, err
+	}
+	userIds := make([]string, 0, len(tweets))
+	for _, tweet := range tweets {
+		userIds = append(userIds, tweet.UserID)
+	}
+	users := make([]*models.User, 0)
+	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
+	if err != nil {
+		return nil, err
+	}
+	userIdToInfoMaps := make(map[string]struct {
+		Username string
+		Avatar   string
+	})
+	for _, user := range users {
+		userIdToInfoMaps[user.ID] = struct {
+			Username string
+			Avatar   string
+		}{Username: user.Username, Avatar: user.Avatar}
+	}
+	// 封装数据
+	tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(tweets))
+	for _, tweet := range tweets {
+		tweetSearchResponse = append(tweetSearchResponse, &forms.TweetListResponse{
+			UserId:       tweet.UserID,
+			Username:     userIdToInfoMaps[tweet.UserID].Username,
+			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
+			TweetId:      tweet.ID,
+			Title:        tweet.Title,
+			Content:      tweet.Content,
+			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			ThumbCount:   tweet.ThumbCount,
+			CommentCount: tweet.CommentCount,
+		})
+	}
+	return tweetSearchResponse, nil
 }
