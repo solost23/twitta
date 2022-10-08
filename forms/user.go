@@ -7,6 +7,7 @@ type RegisterForm struct {
 	Password  string `json:"password" binding:"required,min=6"`
 	Nickname  string `json:"nickname"`
 	Mobile    string `json:"mobile"`
+	Email     string `json:"email" binding:"required"`
 	Avatar    string `json:"avatar"`
 	Introduce string `json:"introduce"`
 }
