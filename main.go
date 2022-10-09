@@ -4,6 +4,7 @@ import (
 	"Twitta/global"
 	"Twitta/global/initialize"
 	"Twitta/router"
+	"Twitta/services"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,10 @@ func main() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+	// 启动消费函数
+	go func() {
+		services.ConsumeEmailMessage()
+	}()
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s \n", err)

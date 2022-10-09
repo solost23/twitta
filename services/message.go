@@ -20,3 +20,24 @@ func SendEmail(topic string, name string, addr string, contentType string, conte
 		go zap.S().Info("发送邮件成功")
 	}
 }
+
+func ConsumeEmailMessage() {
+	// 检测是否可以获取到数据，如果能，那么消费，否则阻塞
+	for {
+		select {
+		case emailMessage := <-EmailMessageChan:
+			SendEmail(emailMessage.Topic, emailMessage.Name, emailMessage.Addr, emailMessage.ContentType, emailMessage.Content)
+		default:
+		}
+	}
+}
+
+type EmailMessage struct {
+	Topic       string
+	Name        string
+	Addr        string
+	ContentType string
+	Content     string
+}
+
+var EmailMessageChan = make(chan *EmailMessage, 20000)

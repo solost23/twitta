@@ -58,7 +58,13 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 	}
 
 	// 异步发送邮件，初步打算采用kafka
-	SendEmail("register", params.Username, params.Email, "text/plain", fmt.Sprintf("恭喜%s注册Twitta成功", params.Username))
+	EmailMessageChan <- &EmailMessage{
+		Topic:       "register",
+		Name:        params.Username,
+		Addr:        params.Email,
+		ContentType: "text/plain",
+		Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+	}
 	return nil
 }
 
@@ -133,7 +139,13 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 		User:         *user,
 		Token:        token,
 	}
-	SendEmail("login", user.Username, user.Email, "text/plain", fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username))
+	EmailMessageChan <- &EmailMessage{
+		Topic:       "login",
+		Name:        user.Username,
+		Addr:        user.Email,
+		ContentType: "text/plain",
+		Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+	}
 	return response, err
 }
 
