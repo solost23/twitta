@@ -1,19 +1,19 @@
-package router
+package routers
 
 import (
 	"Twitta/pkg/middlewares"
 	"github.com/gin-gonic/gin"
+
+	_ "Twitta/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func InitRouter() *gin.Engine {
-	router := gin.Default()
-	// 记录日志
-	router.Use(middlewares.RequestLog())
-	group := router.Group("api")
+func SetRouters(r *gin.Engine) {
+	group := r.Group("api")
 	initNoAuthRouter(group)
 	group.Use(middlewares.JWTAuth())
 	initAuthRouter(group)
-	return router
 }
 
 func initNoAuthRouter(group *gin.RouterGroup) {
@@ -27,6 +27,9 @@ func initNoAuthRouter(group *gin.RouterGroup) {
 	group.POST("user/search", userSearch)
 	// 推文搜索
 	group.POST("tweet/search", tweetSearch)
+
+	// swagger
+	group.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func initAuthRouter(group *gin.RouterGroup) {

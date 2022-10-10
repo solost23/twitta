@@ -1,4 +1,4 @@
-package router
+package routers
 
 import (
 	"Twitta/forms"
@@ -37,6 +37,15 @@ func uploadAvatar(c *gin.Context) {
 	response.Success(c, result)
 }
 
+// @Id Login
+// @Summary Login
+// @Tags    User
+// @Accept  json
+// @Produce json
+// @Param   login body forms.LoginForm true "Login credentials"
+// @Success 200 {object} forms.LoginResponse
+// @Failure 400 {object} response.Response
+// @Router /api/login [post]
 func login(c *gin.Context) {
 	params := &forms.LoginForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {

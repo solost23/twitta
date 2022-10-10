@@ -5,7 +5,7 @@ git pull origin master
 echo -e "合并代码成功"
 
 echo -e "---step2: 编译代码---"
-go mod tidy && go build -o ./build/start main.go
+go mod tidy && go build -o ./build/start cmd/twitta/main.go
 echo -e "编译代码成功"
 
 echo -e "---step3: 更改权限---"

@@ -3,24 +3,45 @@ package main
 import (
 	"Twitta/global"
 	"Twitta/global/initialize"
-	"Twitta/router"
+	"Twitta/routers"
 	"Twitta/services"
-	"log"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
+// @title Twitta API
+// @version 1.0.0
+// @description Twitta API documents
+
+// @contact.name Twitta
+
+// @securityDefinitions.basic BasicAuth
+// @host localhost:6565
+// @BasePath /
+// @schemes http
 func main() {
 	initialize.Initialize()
-	gin.SetMode(global.ServerConfig.DebugMode)
+	// Version
+	if len(os.Args) > 1 && os.Args[1] == "version" {
+		fmt.Printf("Twitta version: %s\n", global.ServerConfig.Version)
+		os.Exit(0)
+	}
+	zap.S().Infof("Starting Twitta %s", global.ServerConfig.Version)
+
+	// HTTP init
+	app := gin.New()
+	routers.Setup(app)
+
+	// Run the server
 	server := &http.Server{
 		Addr:         global.ServerConfig.Addr,
-		Handler:      router.InitRouter(),
+		Handler:      app,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
@@ -30,7 +51,11 @@ func main() {
 	}()
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s \n", err)
+			if err == http.ErrServerClosed {
+				zap.S().Errorf("Server closed")
+			} else {
+				zap.S().Errorf("Server closed unexpect %s", err.Error())
+			}
 		}
 	}()
 	c := make(chan os.Signal, 1)
@@ -39,7 +64,7 @@ func main() {
 		si := <-c
 		switch si {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			server.Close()
+			_ = server.Close()
 			return
 		case syscall.SIGHUP:
 		default:

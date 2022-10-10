@@ -2,6 +2,7 @@ version: "1.0.1"
 debug_mode: "debug"
 addr: ":6565"
 time_location: "Asia/Chongqing"
+prometheus_enable: false
 
 mongo:
   hosts:

@@ -1,4 +1,4 @@
-package router
+package routers
 
 import (
 	"Twitta/pkg/response"
@@ -20,4 +20,3 @@ func chatList(c *gin.Context) {
 	}
 	response.Success(c, result)
 }
-

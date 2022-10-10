@@ -1,15 +1,16 @@
 package config
 
 type ServerConfig struct {
-	Version      string    `mapstructure:"version"`
-	DebugMode    string    `mapstructure:"debug_mode"`
-	TimeLocation string    `mapstructure:"time_location"`
-	Addr         string    `mapstructure:"addr"`
-	MongoConfig  MongoConf `mapstructure:"mongo"`
-	RedisConfig  RedisConf `mapstructure:"redis"`
-	MinioConfig  MinioConf `mapstructure:"minio"`
-	JWTConfig    JWTConf   `mapstructure:"jwt"`
-	Email        EmailConf `mapstructure:"email"`
+	Version          string    `mapstructure:"version"`
+	DebugMode        string    `mapstructure:"debug_mode"`
+	TimeLocation     string    `mapstructure:"time_location"`
+	Addr             string    `mapstructure:"addr"`
+	PrometheusEnable bool      `mapstructure:"prometheus_enable"`
+	MongoConfig      MongoConf `mapstructure:"mongo"`
+	RedisConfig      RedisConf `mapstructure:"redis"`
+	MinioConfig      MinioConf `mapstructure:"minio"`
+	JWTConfig        JWTConf   `mapstructure:"jwt"`
+	Email            EmailConf `mapstructure:"email"`
 }
 
 type MongoConf struct {

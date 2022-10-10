@@ -1,0 +1,109 @@
+basePath: /
+definitions:
+  forms.LoginForm:
+    properties:
+      device:
+        enum:
+        - ios
+        - android
+        - web
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        type: string
+    required:
+    - device
+    - password
+    - username
+    type: object
+  forms.LoginResponse:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      disabled:
+        type: integer
+      email:
+        type: string
+      fansCount:
+        type: integer
+      id:
+        type: string
+      introduce:
+        type: string
+      isFirstLogin:
+        type: integer
+      lastLoginTime:
+        type: string
+      mobile:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      token:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+      wechatCount:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+host: localhost:6565
+info:
+  contact:
+    name: Twitta
+  description: Twitta API documents
+  title: Twitta API
+  version: 1.0.0
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      operationId: Login
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/forms.LoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Login
+      tags:
+      - User
+schemes:
+- http
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
