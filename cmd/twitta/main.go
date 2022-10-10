@@ -24,7 +24,7 @@ import (
 // @securityDefinitions.basic BasicAuth
 // @host localhost:6565
 // @BasePath /
-// @schemes http
+// @schemes http https
 func main() {
 	initialize.Initialize()
 	// Version

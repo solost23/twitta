@@ -172,7 +172,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
 	Host:             "localhost:6565",
 	BasePath:         "/",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"http", "https"},
 	Title:            "Twitta API",
 	Description:      "Twitta API documents",
 	InfoInstanceName: "swagger",

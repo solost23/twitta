@@ -103,6 +103,7 @@ paths:
       - User
 schemes:
 - http
+- https
 securityDefinitions:
   BasicAuth:
     type: basic
