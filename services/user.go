@@ -274,6 +274,8 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 }
 
 func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.UserDetailResponse, error) {
+	db := global.DB
+
 	// 直接从zinc中搜索数据，然后返回搜索到的数据
 	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	from := int32((params.Page - 1) * params.Size)
@@ -283,6 +285,26 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.U
 		return nil, err
 	}
 
+	// 求出粉丝数和关注数的映射关系
+	userIds := make([]string, 0, len(searchResults))
+	for _, searchResult := range searchResults {
+		userIds = append(userIds, *searchResult.Id)
+	}
+	users := make([]*models.User, 0, len(searchResults))
+	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
+	if err != nil {
+		return nil, err
+	}
+	userIdToFansWechatNumMaps := make(map[string]struct {
+		FansCount   int64
+		WechatCount int64
+	}, len(users))
+	for _, user := range users {
+		userIdToFansWechatNumMaps[user.ID] = struct {
+			FansCount   int64
+			WechatCount int64
+		}{FansCount: user.FansCount, WechatCount: user.WechatCount}
+	}
 	userSearchResponse := make([]*forms.UserDetailResponse, 0, len(searchResults))
 	for _, searchResult := range searchResults {
 		userSearchResponse = append(userSearchResponse, &forms.UserDetailResponse{
@@ -291,8 +313,8 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.U
 			Nickname:    searchResult.Source["nickname"].(string),
 			Avatar:      searchResult.Source["avatar"].(string),
 			Introduce:   searchResult.Source["introduce"].(string),
-			WechatCount: int64(searchResult.Source["wechat_count"].(float64)),
-			FansCount:   int64(searchResult.Source["fans_count"].(float64)),
+			WechatCount: userIdToFansWechatNumMaps[*searchResult.Id].WechatCount,
+			FansCount:   userIdToFansWechatNumMaps[*searchResult.Id].FansCount,
 			CreatedAt:   searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
 		})
 	}

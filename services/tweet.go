@@ -7,7 +7,6 @@ import (
 	"Twitta/pkg/models"
 	"Twitta/pkg/utils"
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 
@@ -24,12 +23,31 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
-		ID:      utils.UUID(),
-		UserID:  user.ID,
-		Title:   params.Title,
-		Content: params.Content,
+		ID:           utils.UUID(),
+		UserID:       user.ID,
+		Title:        params.Title,
+		Content:      params.Content,
+		ThumbCount:   0,
+		CommentCount: 0,
 	}
 	_, err := models.NewTweet().InsertOne(c, db, constants.Mongo, data)
+	if err != nil {
+		return err
+	}
+
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	err = z.InsertDocument(c, constants.ZINCINDEXTWEET, data.ID, map[string]interface{}{
+		"basemodel": map[string]interface{}{
+			"created-at": data.BaseModel.CreatedAt,
+			"updated-at": data.BaseModel.UpdatedAt,
+			"deleted-at": data.BaseModel.DeletedAt,
+		},
+		"user_id":       data.UserID,
+		"title":         data.Title,
+		"content":       data.Content,
+		"thumb_count":   data.ThumbCount,
+		"comment_count": data.CommentCount,
+	})
 	if err != nil {
 		return err
 	}
@@ -49,6 +67,11 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 		return errors.New("本推文所属用户不是您，无权删除")
 	}
 	_, err = models.NewTweet().Delete(c, db, constants.Mongo, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	err = z.DeleteDocument(c, constants.ZINCINDEXTWEET, id)
 	if err != nil {
 		return err
 	}
@@ -224,14 +247,36 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.TweetListResponse, error) {
 	db := global.DB
 
-	tweets := make([]*models.Tweet, 0)
-	err := models.NewTweet().Find(c, db, constants.Mongo, bson.M{"title": primitive.Regex{Pattern: params.Keyword, Options: "i"}}, &tweets)
+	// 全局搜索出推文内容
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	from := int32((params.Page - 1) * params.Size)
+	size := from + int32(params.Size) - 1
+	searchResults, err := z.SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
 	if err != nil {
 		return nil, err
 	}
-	userIds := make([]string, 0, len(tweets))
+	tweetIds := make([]string, 0, len(searchResults))
+	for _, searchResult := range searchResults {
+		tweetIds = append(tweetIds, *searchResult.Id)
+	}
+	tweets := make([]*models.Tweet, 0, len(searchResults))
+	err = models.NewTweet().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": tweetIds}}, &tweets)
+	if err != nil {
+		return nil, err
+	}
+	tweetIdToThumbCommentNumMaps := make(map[string]struct {
+		ThumbCount   int64
+		CommentCount int64
+	}, len(tweets))
 	for _, tweet := range tweets {
-		userIds = append(userIds, tweet.UserID)
+		tweetIdToThumbCommentNumMaps[tweet.ID] = struct {
+			ThumbCount   int64
+			CommentCount int64
+		}{ThumbCount: tweet.ThumbCount, CommentCount: tweet.CommentCount}
+	}
+	userIds := make([]string, 0, len(searchResults))
+	for _, searchResult := range searchResults {
+		userIds = append(userIds, searchResult.Source["user_id"].(string))
 	}
 	users := make([]*models.User, 0)
 	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
@@ -249,18 +294,18 @@ func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.
 		}{Username: user.Username, Avatar: user.Avatar}
 	}
 	// 封装数据
-	tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(tweets))
-	for _, tweet := range tweets {
+	tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(searchResults))
+	for _, searchResult := range searchResults {
 		tweetSearchResponse = append(tweetSearchResponse, &forms.TweetListResponse{
-			UserId:       tweet.UserID,
-			Username:     userIdToInfoMaps[tweet.UserID].Username,
-			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			TweetId:      tweet.ID,
-			Title:        tweet.Title,
-			Content:      tweet.Content,
-			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
-			ThumbCount:   tweet.ThumbCount,
-			CommentCount: tweet.CommentCount,
+			UserId:       searchResult.Source["user_id"].(string),
+			Username:     userIdToInfoMaps[searchResult.Source["user_id"].(string)].Username,
+			Avatar:       userIdToInfoMaps[searchResult.Source["user_id"].(string)].Avatar,
+			TweetId:      *searchResult.Id,
+			Title:        searchResult.Source["title"].(string),
+			Content:      searchResult.Source["content"].(string),
+			TweetTime:    searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
+			ThumbCount:   tweetIdToThumbCommentNumMaps[*searchResult.Id].ThumbCount,
+			CommentCount: tweetIdToThumbCommentNumMaps[*searchResult.Id].CommentCount,
 		})
 	}
 	return tweetSearchResponse, nil

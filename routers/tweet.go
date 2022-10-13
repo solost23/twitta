@@ -95,6 +95,13 @@ func tweetSearch(c *gin.Context) {
 		return
 	}
 
+	if params.Page <= 0 {
+		params.Page = 1
+	}
+	if params.Size <= 0 {
+		params.Size = 10
+	}
+
 	result, err := services.NewService().TweetSearch(c, params)
 	if err != nil {
 		response.Error(c, 2001, err)
