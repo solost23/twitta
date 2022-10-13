@@ -20,8 +20,8 @@ type User struct {
 	Avatar        string    `bson:"avatar"`
 	Introduce     string    `bson:"introduce"`
 	Email         string    `bson:"email"`
-	FansCount     int64     `bson:"fans_count"`
-	WechatCount   int64     `bson:"wechat_count"`
+	FansCount     int64     `bson:"fans_count" comment:"关注数"`
+	WechatCount   int64     `bson:"wechat_count" comment:"关注数"`
 	LastLoginTime time.Time `bson:"last_login_time" comment:"用户最近登陆时间"`
 	Disabled      uint      `bson:"disabled" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
 }

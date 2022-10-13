@@ -11,6 +11,7 @@ type ServerConfig struct {
 	MinioConfig      MinioConf `mapstructure:"minio"`
 	JWTConfig        JWTConf   `mapstructure:"jwt"`
 	Email            EmailConf `mapstructure:"email"`
+	Zinc             Zinc      `mapstructure:"zinc"`
 }
 
 type MongoConf struct {
@@ -43,4 +44,9 @@ type EmailConf struct {
 	Password       string `mapstructure:"password"`
 	SendPersonName string `mapstructure:"send_person_name"`
 	SendPersonAddr string `mapstructure:"send_person_addr"`
+}
+
+type Zinc struct {
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }

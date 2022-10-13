@@ -2,14 +2,36 @@ package services
 
 import (
 	"context"
-	"fmt"
-
 	client "github.com/zinclabs/sdk-go-zincsearch"
 )
 
 type Zinc struct {
 	Username string
 	Password string
+}
+
+// 检查索引是否存在
+func (z *Zinc) EsExists(ctx context.Context, index string) bool {
+	configuration := client.NewConfiguration()
+	apiClient := client.NewAPIClient(configuration)
+	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
+	_, _, err := apiClient.Index.EsExists(auth, index).Execute()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// 创建索引
+func (z *Zinc) InsertIndex(ctx context.Context, data client.MetaIndexSimple) error {
+	configuration := client.NewConfiguration()
+	apiClient := client.NewAPIClient(configuration)
+	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
+	_, _, err := apiClient.Index.Create(auth).Data(data).Execute()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // 添加文档
@@ -24,9 +46,8 @@ func (z *Zinc) InsertDocument(ctx context.Context, index string, id string, docu
 	return nil
 }
 
-// 更新文档 // 弃用，总显示404 Not Found 更新采用先删除后添加的方式
+// 更新文档 发现总是404 弃用，采取删除+插入的方式构建全文索引
 func (z *Zinc) UpdateDocument(ctx context.Context, index string, id string, document map[string]interface{}) error {
-	fmt.Println(index, id, document)
 	configuration := client.NewConfiguration()
 	apiClient := client.NewAPIClient(configuration)
 	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
@@ -50,7 +71,7 @@ func (z *Zinc) DeleteDocument(ctx context.Context, index string, id string) erro
 }
 
 // 搜索文档
-func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString string, from int32, size int32) ([]map[string]interface{}, error) {
+func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString string, from int32, size int32) ([]client.MetaHit, error) {
 	query := client.MetaZincQuery{
 		Query: &client.MetaQuery{
 			Bool: &client.MetaBoolQuery{
@@ -74,9 +95,9 @@ func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString str
 		return nil, err
 	}
 	// 搜集查询到内容，返回数据
-	sources := make([]map[string]interface{}, len(resp.GetHits().Hits))
+	hits := make([]client.MetaHit, 0, len(resp.GetHits().Hits))
 	for _, hit := range resp.GetHits().Hits {
-		sources = append(sources, hit.Source)
+		hits = append(hits, hit)
 	}
-	return sources, nil
+	return hits, nil
 }

@@ -1,5 +1,8 @@
 package forms
 
+import "Twitta/pkg/utils"
+
 type SearchForm struct {
-	Keyword string `json:"keyword"`
+	utils.PageForm
+	Keyword string `form:"keyword"`
 }

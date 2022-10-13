@@ -33,6 +33,10 @@ email:
   send_person_name: "Twitta"
   send_person_addr: "tianyuanyuans@163.com"
 
+zinc:
+  username: "admin"
+  password: "Complexpass#123"
+
 kafka:
   consumer:
     addrs:

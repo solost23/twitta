@@ -26,10 +26,9 @@ func TestZinc_InsertDocument(t *testing.T) {
 			name: "t1",
 			arg: arg{
 				ctx:   context.Background(),
-				index: "user",
+				index: "user1",
 				id:    "1",
 				document: map[string]interface{}{
-					"id":   1,
 					"name": "ty1",
 					"age":  18,
 				},
@@ -42,10 +41,9 @@ func TestZinc_InsertDocument(t *testing.T) {
 			name: "t2",
 			arg: arg{
 				ctx:   context.Background(),
-				index: "user",
+				index: "user1",
 				id:    "2",
 				document: map[string]interface{}{
-					"id":   2,
 					"name": "ty2",
 					"age":  18,
 				},
@@ -61,7 +59,6 @@ func TestZinc_InsertDocument(t *testing.T) {
 				index: "user1",
 				id:    "3",
 				document: map[string]interface{}{
-					"id":   3,
 					"name": "ty3",
 					"age":  18,
 				},
@@ -105,7 +102,7 @@ func TestZinc_SearchDocument(t *testing.T) {
 			name: "t1",
 			arg: arg{
 				ctx:         context.Background(),
-				index:       "user",
+				index:       "user1",
 				queryString: "18",
 				from:        0,
 				size:        5,
@@ -119,7 +116,7 @@ func TestZinc_SearchDocument(t *testing.T) {
 			name: "t2",
 			arg: arg{
 				ctx:         context.Background(),
-				index:       "user",
+				index:       "user1",
 				queryString: "ty1",
 				from:        0,
 				size:        20,
@@ -161,7 +158,7 @@ func TestZinc_DeleteDocument(t *testing.T) {
 			arg: arg{
 				ctx:   context.Background(),
 				index: "user1",
-				id:    "3",
+				id:    "6fa82eb2-4af0-11ed-8267-16c07829f3cb",
 			},
 			want: want{
 				err: nil,
@@ -199,12 +196,11 @@ func TestZinc_UpdateDocument(t *testing.T) {
 			name: "t1",
 			arg: arg{
 				ctx:   context.Background(),
-				index: "user",
+				index: "user1",
 				id:    "2",
 				document: map[string]interface{}{
 					"name": "alex",
 					"age":  20,
-					"id":   "2",
 				},
 			},
 			want: want{

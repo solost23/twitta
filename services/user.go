@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"mime/multipart"
 	"time"
 
@@ -53,6 +52,31 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		Disabled:  0,
 	}
 	_, err = user.InsertOne(c, db, constants.Mongo, data)
+	if err != nil {
+		return err
+	}
+
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	// 将用户数据存入zinc
+	err = z.InsertDocument(c, constants.ZINCINDEXUSER, data.ID, map[string]interface{}{
+		"basemodel": map[string]interface{}{
+			"created-at": data.BaseModel.CreatedAt,
+			"updated-at": data.BaseModel.UpdatedAt,
+			"deleted-at": data.BaseModel.DeletedAt,
+		},
+		"username":        data.Username,
+		"password":        data.Password,
+		"nickname":        data.Nickname,
+		"mobile":          data.Mobile,
+		"role":            data.Role,
+		"avatar":          data.Avatar,
+		"introduce":       data.Introduce,
+		"email":           data.Email,
+		"fans_count":      data.FansCount,
+		"wechat_count":    data.WechatCount,
+		"last_login_time": data.LastLoginTime,
+		"disabled":        data.Disabled,
+	})
 	if err != nil {
 		return err
 	}
@@ -187,6 +211,41 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 	if err != nil {
 		return err
 	}
+
+	data := &models.User{}
+	err = models.NewUser().FindOne(c, db, constants.Mongo, bson.M{"_id": user.ID}, &data)
+	if err != nil {
+		return err
+	}
+	// 拿到id 更新zinc数据
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	// 删除 + 插入 = 更新
+	err = z.DeleteDocument(c, constants.ZINCINDEXUSER, user.ID)
+	if err != nil {
+		return err
+	}
+	err = z.InsertDocument(c, constants.ZINCINDEXUSER, user.ID, map[string]interface{}{
+		"basemodel": map[string]interface{}{
+			"created-at": data.BaseModel.CreatedAt,
+			"updated-at": data.BaseModel.UpdatedAt,
+			"deleted-at": data.BaseModel.DeletedAt,
+		},
+		"username":        data.Username,
+		"password":        data.Password,
+		"nickname":        data.Nickname,
+		"mobile":          data.Mobile,
+		"role":            data.Role,
+		"avatar":          data.Avatar,
+		"introduce":       data.Introduce,
+		"email":           data.Email,
+		"fans_count":      data.FansCount,
+		"wechat_count":    data.WechatCount,
+		"last_login_time": data.LastLoginTime,
+		"disabled":        data.Disabled,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -215,25 +274,26 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 }
 
 func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.UserDetailResponse, error) {
-	db := global.DB
-
-	// 直接搜索
-	users := make([]*models.User, 0)
-	err := models.NewUser().Find(c, db, constants.Mongo, bson.M{"username": primitive.Regex{Pattern: params.Keyword, Options: "i"}}, &users)
+	// 直接从zinc中搜索数据，然后返回搜索到的数据
+	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
+	from := int32((params.Page - 1) * params.Size)
+	size := from + int32(params.Size) - 1
+	searchResults, err := z.SearchDocument(c, constants.ZINCINDEXUSER, params.Keyword, from, size)
 	if err != nil {
 		return nil, err
 	}
-	userSearchResponse := make([]*forms.UserDetailResponse, 0, len(users))
-	for _, user := range users {
+
+	userSearchResponse := make([]*forms.UserDetailResponse, 0, len(searchResults))
+	for _, searchResult := range searchResults {
 		userSearchResponse = append(userSearchResponse, &forms.UserDetailResponse{
-			UserId:      user.ID,
-			Username:    user.Username,
-			Nickname:    user.Nickname,
-			Avatar:      user.Avatar,
-			Introduce:   user.Introduce,
-			WechatCount: user.WechatCount,
-			FansCount:   user.FansCount,
-			CreatedAt:   user.CreatedAt.Format(constants.TimeFormat),
+			UserId:      *searchResult.Id,
+			Username:    searchResult.Source["username"].(string),
+			Nickname:    searchResult.Source["nickname"].(string),
+			Avatar:      searchResult.Source["avatar"].(string),
+			Introduce:   searchResult.Source["introduce"].(string),
+			WechatCount: int64(searchResult.Source["wechat_count"].(float64)),
+			FansCount:   int64(searchResult.Source["fans_count"].(float64)),
+			CreatedAt:   searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
 		})
 	}
 	return userSearchResponse, nil
