@@ -142,9 +142,83 @@ func TestZinc_SearchDocument(t *testing.T) {
 }
 
 func TestZinc_DeleteDocument(t *testing.T) {
+	z := &Zinc{"admin", "Complexpass#123"}
+	type arg struct {
+		ctx   context.Context
+		index string
+		id    string
+	}
+	type want struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		arg  arg
+		want want
+	}{
+		{
+			name: "t1",
+			arg: arg{
+				ctx:   context.Background(),
+				index: "user1",
+				id:    "3",
+			},
+			want: want{
+				err: nil,
+			},
+		},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := z.DeleteDocument(test.arg.ctx, test.arg.index, test.arg.id)
+			if err != test.want.err {
+				t.Errorf("err: %v", err)
+			}
+		})
+	}
 }
 
 func TestZinc_UpdateDocument(t *testing.T) {
+	z := &Zinc{"admin", "Complexpass#123"}
+	type arg struct {
+		ctx      context.Context
+		index    string
+		id       string
+		document map[string]interface{}
+	}
+	type want struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		arg  arg
+		want want
+	}{
+		{
+			name: "t1",
+			arg: arg{
+				ctx:   context.Background(),
+				index: "user",
+				id:    "2",
+				document: map[string]interface{}{
+					"name": "alex",
+					"age":  20,
+					"id":   "2",
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+	}
 
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := z.UpdateDocument(test.arg.ctx, test.arg.index, test.arg.id, test.arg.document)
+			if err != test.want.err {
+				t.Errorf("err: %v", err)
+			}
+		})
+	}
 }

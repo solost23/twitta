@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	client "github.com/zinclabs/sdk-go-zincsearch"
 )
@@ -23,14 +24,29 @@ func (z *Zinc) InsertDocument(ctx context.Context, index string, id string, docu
 	return nil
 }
 
-// 修改文档
-func (z *Zinc) UpdateDocument() {
-
+// 更新文档 // 弃用，总显示404 Not Found 更新采用先删除后添加的方式
+func (z *Zinc) UpdateDocument(ctx context.Context, index string, id string, document map[string]interface{}) error {
+	fmt.Println(index, id, document)
+	configuration := client.NewConfiguration()
+	apiClient := client.NewAPIClient(configuration)
+	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
+	_, _, err := apiClient.Document.Update(auth, index, id).Document(document).Execute()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // 删除文档
-func (z *Zinc) DeleteDocument() {
-
+func (z *Zinc) DeleteDocument(ctx context.Context, index string, id string) error {
+	configuration := client.NewConfiguration()
+	apiClient := client.NewAPIClient(configuration)
+	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
+	_, _, err := apiClient.Document.Delete(auth, index, id).Execute()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // 搜索文档
