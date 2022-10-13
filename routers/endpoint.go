@@ -23,9 +23,9 @@ func initNoAuthRouter(group *gin.RouterGroup) {
 
 	// 展示所有推文
 	group.GET("tweet", tweetList)
-	// 用户搜索
+	// 用户搜索 // 采用全局搜索
 	group.POST("user/search", userSearch)
-	// 推文搜索
+	// 推文搜索 // 采用全局搜索
 	group.POST("tweet/search", tweetSearch)
 
 	// swagger

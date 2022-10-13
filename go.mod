@@ -19,6 +19,7 @@ require (
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.1
 	github.com/zinclabs/go-gin-prometheus v0.1.1
+	github.com/zinclabs/sdk-go-zincsearch v0.3.3
 	go.mongodb.org/mongo-driver v1.10.2
 	go.uber.org/zap v1.17.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
