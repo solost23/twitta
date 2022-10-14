@@ -251,7 +251,7 @@ func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.
 	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	from := int32((params.Page - 1) * params.Size)
 	size := from + int32(params.Size) - 1
-	searchResults, err := z.SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
+	searchResults, _, err := z.SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
 	if err != nil {
 		return nil, err
 	}

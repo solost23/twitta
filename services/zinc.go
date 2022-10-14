@@ -71,7 +71,7 @@ func (z *Zinc) DeleteDocument(ctx context.Context, index string, id string) erro
 }
 
 // 搜索文档
-func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString string, from int32, size int32) ([]client.MetaHit, error) {
+func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString string, from int32, size int32) ([]client.MetaHit, int64, error) {
 	query := client.MetaZincQuery{
 		Query: &client.MetaQuery{
 			Bool: &client.MetaBoolQuery{
@@ -92,12 +92,13 @@ func (z *Zinc) SearchDocument(ctx context.Context, index string, queryString str
 	auth := context.WithValue(ctx, client.ContextBasicAuth, client.BasicAuth{z.Username, z.Password})
 	resp, _, err := apiClient.Search.Search(auth, index).Query(query).Execute()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+	var count = int64(*resp.GetHits().Total.Value)
 	// 搜集查询到内容，返回数据
 	hits := make([]client.MetaHit, 0, len(resp.GetHits().Hits))
 	for _, hit := range resp.GetHits().Hits {
 		hits = append(hits, hit)
 	}
-	return hits, nil
+	return hits, count, nil
 }
