@@ -15,6 +15,7 @@ require (
 	github.com/onsi/gomega v1.20.2 // indirect
 	github.com/solost23/tools v1.0.8
 	github.com/spf13/viper v1.13.0
+	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.1
