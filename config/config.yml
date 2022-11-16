@@ -48,3 +48,10 @@ kafka:
       - "127.0.0.1:9093"
     topics:
       - "email"
+
+consul:
+  host: "127.0.0.1"
+  port: "8500"
+
+user:
+  name: "user"

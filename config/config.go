@@ -1,17 +1,19 @@
 package config
 
 type ServerConfig struct {
-	Version          string    `mapstructure:"version"`
-	DebugMode        string    `mapstructure:"debug_mode"`
-	TimeLocation     string    `mapstructure:"time_location"`
-	Addr             string    `mapstructure:"addr"`
-	PrometheusEnable bool      `mapstructure:"prometheus_enable"`
-	MongoConfig      MongoConf `mapstructure:"mongo"`
-	RedisConfig      RedisConf `mapstructure:"redis"`
-	MinioConfig      MinioConf `mapstructure:"minio"`
-	JWTConfig        JWTConf   `mapstructure:"jwt"`
-	Email            EmailConf `mapstructure:"email"`
-	Zinc             Zinc      `mapstructure:"zinc"`
+	Version          string      `mapstructure:"version"`
+	DebugMode        string      `mapstructure:"debug_mode"`
+	TimeLocation     string      `mapstructure:"time_location"`
+	Addr             string      `mapstructure:"addr"`
+	PrometheusEnable bool        `mapstructure:"prometheus_enable"`
+	MongoConfig      MongoConf   `mapstructure:"mongo"`
+	RedisConfig      RedisConf   `mapstructure:"redis"`
+	MinioConfig      MinioConf   `mapstructure:"minio"`
+	JWTConfig        JWTConf     `mapstructure:"jwt"`
+	Email            EmailConf   `mapstructure:"email"`
+	Zinc             Zinc        `mapstructure:"zinc"`
+	ConsulConfig     ConsulConf  `mapstructure:"consul"`
+	UserSrvConfig    UserSrvConf `mapstructure:"user"`
 }
 
 type MongoConf struct {
@@ -49,4 +51,13 @@ type EmailConf struct {
 type Zinc struct {
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
+}
+
+type ConsulConf struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+}
+
+type UserSrvConf struct {
+	Name string `mapstructure:"name"`
 }

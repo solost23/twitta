@@ -10,4 +10,6 @@ func Initialize(filePath string) {
 	InitLoc()
 	// 初始化 Mongo
 	InitMongo()
+	// 初始化push grpc
+	InitPushClient()
 }

@@ -11,7 +11,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/solost23/go_interface/gen_go/common"
+	"github.com/solost23/go_interface/gen_go/push"
 	"mime/multipart"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -81,13 +84,32 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		return err
 	}
 
-	// 异步发送邮件，初步打算采用kafka
-	EmailMessageChan <- &EmailMessage{
-		Topic:       "register",
-		Name:        params.Username,
-		Addr:        params.Email,
-		ContentType: "text/plain",
-		Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+	// 调用邮件发送服务发送邮件
+	if len(params.Email) >= 0 {
+		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+			Header: &common.RequestHeader{
+				TraceId:     6678677,
+				OperatorUid: 55,
+			},
+			Email: &push.Email{
+				Host:           global.ServerConfig.Email.Host,
+				Port:           strconv.Itoa(global.ServerConfig.Email.Port),
+				Password:       global.ServerConfig.Email.Password,
+				SendPersonName: global.ServerConfig.Email.SendPersonName,
+				SendPersonAddr: global.ServerConfig.Email.SendPersonAddr,
+				Topic:          "register",
+				Name:           params.Username,
+				Addr:           params.Email,
+				ContentType:    "text/plain",
+				Content:        fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+			},
+		})
+		if err != nil {
+			return err
+		}
+		if reply.ErrorInfo.GetCode() != 0 {
+			return errors.New(reply.ErrorInfo.GetMsg())
+		}
 	}
 	return nil
 }
@@ -163,13 +185,35 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 		User:         *user,
 		Token:        token,
 	}
-	EmailMessageChan <- &EmailMessage{
-		Topic:       "login",
-		Name:        user.Username,
-		Addr:        user.Email,
-		ContentType: "text/plain",
-		Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+
+	// 调用邮件发送服务发送邮件
+	if len(user.Email) >= 0 {
+		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+			Header: &common.RequestHeader{
+				TraceId:     6678678,
+				OperatorUid: 56,
+			},
+			Email: &push.Email{
+				Host:           global.ServerConfig.Email.Host,
+				Port:           strconv.Itoa(global.ServerConfig.Email.Port),
+				Password:       global.ServerConfig.Email.Password,
+				SendPersonName: global.ServerConfig.Email.SendPersonName,
+				SendPersonAddr: global.ServerConfig.Email.SendPersonAddr,
+				Topic:          "login",
+				Name:           user.Username,
+				Addr:           user.Email,
+				ContentType:    "text/plain",
+				Content:        fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if reply.ErrorInfo.GetCode() != 0 {
+			return nil, errors.New(reply.ErrorInfo.GetMsg())
+		}
 	}
+
 	return response, err
 }
 
