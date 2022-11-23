@@ -34,7 +34,7 @@ email:
   send_person_addr: "tianyuanyuans@163.com"
 
 zinc:
-  host: "zinc"
+  host: "http://zinc"
   port: 4080
   username: "admin"
   password: "Complexpass#123"
