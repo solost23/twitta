@@ -1,0 +1,67 @@
+version: "3.5"
+
+services:
+  app:
+    build: "."
+    restart: always
+    ports:
+      - "8080-8085:6565"
+    volumes:
+      - "/Users/ty/server/Twitta/config:/config"
+#      - "/Users/ty/Twitta/logs:/logs"
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app_net
+  mongo:
+    image: mongo:latest
+    restart: always
+    container_name: mongo0
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio
+    networks:
+      - app_net
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis0
+    ports:
+      - "6379:6379"
+    networks:
+      - app_net
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    container_name: minio0
+    ports:
+      - "9000:9000"
+      - "9200:9200"
+    networks:
+      - app_net
+
+  zinc:
+    image: public.ecr.aws/zinclabs/zinc:latest
+    restart: always
+    container_name: zinc0
+    ports:
+      - "4080:4080"
+    networks:
+      - app_net
+
+  consul:
+    image: consul:latest
+    container_name: consul0
+    ports:
+      - "8500:8500"
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    external: true

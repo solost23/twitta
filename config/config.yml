@@ -1,22 +1,22 @@
 version: "1.0.1"
 debug_mode: "debug"
 addr: ":6565"
-time_location: "Asia/Chongqing"
+time_location: "Asia/Shanghai"
 prometheus_enable: false
 
 mongo:
   hosts:
-    - "127.0.0.1:27017"
+    - "mongo0:27017"
   auth_source: ""
   username: ""
   password: ""
   timeout: 30
 
 redis:
-  addr: "127.0.0.1:6379"
+  addr: "redis0:6379"
 
 minio:
-  end_point: "127.0.0.1:9000"
+  end_point: "minio0:9000"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
   user_ssl: false
@@ -50,7 +50,7 @@ kafka:
       - "email"
 
 consul:
-  host: "127.0.0.1"
+  host: "consul"
   port: "8500"
 
 user:
