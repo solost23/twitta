@@ -6,17 +6,17 @@ prometheus_enable: false
 
 mongo:
   hosts:
-    - "mongo0:27017"
+    - "mongo:27017"
   auth_source: ""
   username: ""
   password: ""
   timeout: 30
 
 redis:
-  addr: "redis0:6379"
+  addr: "redis:6379"
 
 minio:
-  end_point: "minio0:9000"
+  end_point: "minio:9000"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
   user_ssl: false
