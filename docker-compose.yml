@@ -7,7 +7,7 @@ services:
     ports:
       - "6565:6565"
     volumes:
-      - "/Users/ty/server/Twitta/config:/config"
+      - "/Users/ty/server/Twitta/configs:/configs"
       # - "/Users/ty/Twitta/logs:/logs"
     depends_on:
       - mongo
@@ -42,15 +42,16 @@ services:
     image: minio/minio:latest
     restart: always
     container_name: minio
+    command: server --console-address ":9001" http://minio/data{1...2}
     environment:
       MINIO_ACCESS_KEY: "minioadmin"
       MINIO_SECRET_KEY: "minioadmin"
     ports:
       - "9000:9000"
-      - "9200:9200"
+      - "9001:9001"
     volumes:
-      - "/Users/ty/minio/data:/data"
-      - "/Users/ty/minio/config:/root/.minio"
+      - "/Users/ty/minio/data1:/data1"
+      - "/Users/ty/minio/data2:/data2"
     networks:
       - app_net
 
@@ -58,6 +59,9 @@ services:
     image: public.ecr.aws/zinclabs/zinc:latest
     restart: always
     container_name: zinc
+    environment:
+      ZINC_FIRST_ADMIN_USER: "admin"
+      ZINC_FIRST_ADMIN_PASSWORD: "Complexpass#123"
     ports:
       - "4080:4080"
     networks:
