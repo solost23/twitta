@@ -26,7 +26,7 @@ import (
 // @BasePath /
 // @schemes http https
 func main() {
-	initialize.Initialize("./config/config.yml")
+	initialize.Initialize("./configs/configs.yml")
 	// Version
 	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("Twitta version: %s\n", global.ServerConfig.Version)

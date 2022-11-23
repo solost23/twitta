@@ -59,9 +59,8 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		return err
 	}
 
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	// 将用户数据存入zinc
-	err = z.InsertDocument(c, constants.ZINCINDEXUSER, data.ID, map[string]interface{}{
+	err = NewZinc().InsertDocument(c, constants.ZINCINDEXUSER, data.ID, map[string]interface{}{
 		"basemodel": map[string]interface{}{
 			"created-at": data.BaseModel.CreatedAt,
 			"updated-at": data.BaseModel.UpdatedAt,
@@ -262,13 +261,12 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		return err
 	}
 	// 拿到id 更新zinc数据
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	// 删除 + 插入 = 更新
-	err = z.DeleteDocument(c, constants.ZINCINDEXUSER, user.ID)
+	err = NewZinc().DeleteDocument(c, constants.ZINCINDEXUSER, user.ID)
 	if err != nil {
 		return err
 	}
-	err = z.InsertDocument(c, constants.ZINCINDEXUSER, user.ID, map[string]interface{}{
+	err = NewZinc().InsertDocument(c, constants.ZINCINDEXUSER, user.ID, map[string]interface{}{
 		"basemodel": map[string]interface{}{
 			"created-at": data.BaseModel.CreatedAt,
 			"updated-at": data.BaseModel.UpdatedAt,
@@ -321,10 +319,9 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.U
 	db := global.DB
 
 	// 直接从zinc中搜索数据，然后返回搜索到的数据
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	from := int32((params.Page - 1) * params.Size)
 	size := from + int32(params.Size) - 1
-	searchResults, _, err := z.SearchDocument(c, constants.ZINCINDEXUSER, params.Keyword, from, size)
+	searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXUSER, params.Keyword, from, size)
 	if err != nil {
 		return nil, err
 	}

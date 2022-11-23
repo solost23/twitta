@@ -35,8 +35,7 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		return err
 	}
 
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
-	err = z.InsertDocument(c, constants.ZINCINDEXTWEET, data.ID, map[string]interface{}{
+	err = NewZinc().InsertDocument(c, constants.ZINCINDEXTWEET, data.ID, map[string]interface{}{
 		"basemodel": map[string]interface{}{
 			"created-at": data.BaseModel.CreatedAt,
 			"updated-at": data.BaseModel.UpdatedAt,
@@ -70,8 +69,7 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
-	err = z.DeleteDocument(c, constants.ZINCINDEXTWEET, id)
+	err = NewZinc().DeleteDocument(c, constants.ZINCINDEXTWEET, id)
 	if err != nil {
 		return err
 	}
@@ -248,10 +246,9 @@ func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.
 	db := global.DB
 
 	// 全局搜索出推文内容
-	z := &Zinc{Username: global.ServerConfig.Zinc.Username, Password: global.ServerConfig.Zinc.Password}
 	from := int32((params.Page - 1) * params.Size)
 	size := from + int32(params.Size) - 1
-	searchResults, _, err := z.SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
+	searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 package global
 
 import (
-	"Twitta/config"
+	"Twitta/configs"
 	"github.com/solost23/go_interface/gen_go/push"
 	"time"
 
@@ -13,7 +13,7 @@ import (
 var (
 	DB            *mongo.Client
 	Loc           *time.Location
-	ServerConfig  = &config.ServerConfig{}
+	ServerConfig  = &configs.ServerConfig{}
 	RedisMapPool  = make(map[int]*redis.Client)
 	PushSrvClient push.PushClient
 )

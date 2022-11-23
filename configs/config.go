@@ -1,4 +1,4 @@
-package config
+package configs
 
 type ServerConfig struct {
 	Version          string      `mapstructure:"version"`
@@ -49,6 +49,8 @@ type EmailConf struct {
 }
 
 type Zinc struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 }
