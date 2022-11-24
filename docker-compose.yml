@@ -43,8 +43,8 @@ services:
   minio:
     image: minio/minio:latest
     restart: always
-    container_name: minio
-    command: server --console-address ":9001" http://minio/data{1...2}
+    container_name: minio_storage
+    command: server --console-address ":9001" http://minio_storage/data{1...2}
     environment:
       MINIO_ACCESS_KEY: "minioadmin"
       MINIO_SECRET_KEY: "minioadmin"
@@ -52,8 +52,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - "/Users/ty/minio/data1:/data1"
-      - "/Users/ty/minio/data2:/data2"
+      - "/Users/ty/minio_storage/data1:/data1"
+      - "/Users/ty/minio_storage/data2:/data2"
     networks:
       - app_net
 

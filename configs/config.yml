@@ -16,7 +16,7 @@ redis:
   addr: "redis:6379"
 
 minio:
-  end_point: "minio:9000"
+  end_point: "minio_storage:9000"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
   user_ssl: false

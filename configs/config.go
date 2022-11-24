@@ -8,7 +8,7 @@ type ServerConfig struct {
 	PrometheusEnable bool        `mapstructure:"prometheus_enable"`
 	MongoConfig      MongoConf   `mapstructure:"mongo"`
 	RedisConfig      RedisConf   `mapstructure:"redis"`
-	MinioConfig      MinioConf   `mapstructure:"minio"`
+	MinioConfig      MinioConf   `mapstructure:"minio_storage"`
 	JWTConfig        JWTConf     `mapstructure:"jwt"`
 	Email            EmailConf   `mapstructure:"email"`
 	Zinc             Zinc        `mapstructure:"zinc"`
