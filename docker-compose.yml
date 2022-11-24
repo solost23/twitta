@@ -66,6 +66,8 @@ services:
       ZINC_FIRST_ADMIN_PASSWORD: "Complexpass#123"
     ports:
       - "4080:4080"
+    volumes:
+      - "/Users/ty/zinc/data:/data"
     networks:
       - app_net
 
