@@ -43,7 +43,7 @@ services:
   minio:
     image: minio/minio:latest
     restart: always
-    container_name: minio_storage
+    container_name: minio
     command: server --console-address ":9001" http://minio_storage/data{1...2}
     environment:
       MINIO_ACCESS_KEY: "minioadmin"
