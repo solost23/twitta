@@ -21,9 +21,6 @@ COPY --from=builder /build/app /
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 # 设置时区
 ENV TZ=Asia/Shanghai
-# 安装证书，防止Unknown desc = x509: certificate signed by unknown authority错误
-# 注意： 安装服务器的证书
-ADD ca-certificates.crt /etc/ssl/certs/
 
 EXPOSE 6565
 CMD ["/app"]

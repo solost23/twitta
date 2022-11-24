@@ -9,6 +9,8 @@ services:
     volumes:
       - "/Users/ty/server/Twitta/configs:/configs"
       # - "/Users/ty/Twitta/logs:/logs"
+      # 挂载证书
+      - "/Users/ty/server/Twitta/certs:/etc/ssl/certs/"
     depends_on:
       - mongo
       - redis
