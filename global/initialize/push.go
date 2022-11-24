@@ -15,7 +15,7 @@ func InitPushClient() {
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
 	target := fmt.Sprintf("consul://%s:%d/%s",
-		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.UserSrvConfig.Name)
+		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.PushSrvConfig.Name)
 
 	cc, err := grpc.Dial(
 		target,

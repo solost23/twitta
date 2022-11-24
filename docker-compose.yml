@@ -16,7 +16,7 @@ services:
       - redis
       - minio
       - zinc
-      - consul
+#      - consul
     networks:
       - app_net
 
@@ -70,14 +70,14 @@ services:
       - "/Users/ty/zinc/data:/data"
     networks:
       - app_net
-
-  consul:
-    image: consul:latest
-    container_name: consul
-    ports:
-      - "8500:8500"
-    networks:
-      - app_net
+# consul容器跟随服务创建，所以这里注释掉了
+#  consul:
+#    image: consul:latest
+#    container_name: consul
+#    ports:
+#      - "8500:8500"
+#    networks:
+#      - app_net
 
 networks:
   app_net:

@@ -55,5 +55,5 @@ consul:
   host: "consul"
   port: "8500"
 
-user:
-  name: "user"
+push:
+  name: "push_service"

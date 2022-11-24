@@ -13,7 +13,7 @@ type ServerConfig struct {
 	Email            EmailConf   `mapstructure:"email"`
 	Zinc             Zinc        `mapstructure:"zinc"`
 	ConsulConfig     ConsulConf  `mapstructure:"consul"`
-	UserSrvConfig    UserSrvConf `mapstructure:"user"`
+	PushSrvConfig    PushSrvConf `mapstructure:"push"`
 }
 
 type MongoConf struct {
@@ -60,6 +60,6 @@ type ConsulConf struct {
 	Port int    `mapstructure:"port"`
 }
 
-type UserSrvConf struct {
+type PushSrvConf struct {
 	Name string `mapstructure:"name"`
 }
