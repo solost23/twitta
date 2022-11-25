@@ -49,6 +49,9 @@ consul:
   host: "consul"
   port: "8500"
 
+static-oss:
+  domain: "http://127.0.0.1:9000"
+
 push:
   name: "push_service"
 

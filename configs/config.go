@@ -1,19 +1,20 @@
 package configs
 
 type ServerConfig struct {
-	Version          string      `mapstructure:"version"`
-	DebugMode        string      `mapstructure:"debug_mode"`
-	TimeLocation     string      `mapstructure:"time_location"`
-	Addr             string      `mapstructure:"addr"`
-	PrometheusEnable bool        `mapstructure:"prometheus_enable"`
-	MongoConfig      MongoConf   `mapstructure:"mongo"`
-	RedisConfig      RedisConf   `mapstructure:"redis"`
-	JWTConfig        JWTConf     `mapstructure:"jwt"`
-	Email            EmailConf   `mapstructure:"email"`
-	Zinc             Zinc        `mapstructure:"zinc"`
-	ConsulConfig     ConsulConf  `mapstructure:"consul"`
-	PushSrvConfig    PushSrvConf `mapstructure:"push"`
-	OSSSrvConfig     OSSSrvConf  `mapstructure:"oss"`
+	Version          string        `mapstructure:"version"`
+	DebugMode        string        `mapstructure:"debug_mode"`
+	TimeLocation     string        `mapstructure:"time_location"`
+	Addr             string        `mapstructure:"addr"`
+	PrometheusEnable bool          `mapstructure:"prometheus_enable"`
+	MongoConfig      MongoConf     `mapstructure:"mongo"`
+	RedisConfig      RedisConf     `mapstructure:"redis"`
+	JWTConfig        JWTConf       `mapstructure:"jwt"`
+	Email            EmailConf     `mapstructure:"email"`
+	Zinc             Zinc          `mapstructure:"zinc"`
+	ConsulConfig     ConsulConf    `mapstructure:"consul"`
+	StaticOSS        StaticOSSConf `mapstructure:"static-oss"`
+	PushSrvConfig    PushSrvConf   `mapstructure:"push"`
+	OSSSrvConfig     OSSSrvConf    `mapstructure:"oss"`
 }
 
 type MongoConf struct {
@@ -51,6 +52,10 @@ type Zinc struct {
 type ConsulConf struct {
 	Host string `mapstructure:"host"`
 	Port int    `mapstructure:"port"`
+}
+
+type StaticOSSConf struct {
+	Domain string `mapstructure:"domain"`
 }
 
 type PushSrvConf struct {

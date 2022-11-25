@@ -48,7 +48,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		Nickname:  params.Nickname,
 		Mobile:    params.Mobile,
 		Role:      "user",
-		Avatar:    params.Avatar,
+		Avatar:    utils.TrimDomainPrefix(params.Avatar),
 		Introduce: params.Introduce,
 		Email:     params.Email,
 		FansCount: 0,
@@ -71,7 +71,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		"nickname":        data.Nickname,
 		"mobile":          data.Mobile,
 		"role":            data.Role,
-		"avatar":          data.Avatar,
+		"avatar":          utils.TrimDomainPrefix(data.Avatar),
 		"introduce":       data.Introduce,
 		"email":           data.Email,
 		"fans_count":      data.FansCount,
@@ -119,7 +119,10 @@ func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (stri
 	if err != nil {
 		return "", err
 	}
-	return result, nil
+	// 对链接做处理
+	// eg:http://minio:9000/avatar/5ac8dd9f599264da59532bc31593b7b7.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20221125%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221125T033740Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=514d733ebc7a4e1b58d54b810a191dd9994d8745231045c7a0908b895c0c14db
+	// 应处理成: http://localhost:9000/avatar/5ac8dd9f599264da59532bc31593b7b7.jpeg，返回
+	return utils.FulfillImageOSSPrefix(utils.TrimDomainPrefix(result)), nil
 }
 
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
@@ -246,7 +249,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		"$set": bson.M{
 			"username":  params.Username,
 			"nickname":  params.Nickname,
-			"avatar":    params.Avatar,
+			"avatar":    utils.TrimDomainPrefix(params.Avatar),
 			"introduce": params.Introduce,
 		},
 	}
@@ -277,7 +280,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		"nickname":        data.Nickname,
 		"mobile":          data.Mobile,
 		"role":            data.Role,
-		"avatar":          data.Avatar,
+		"avatar":          utils.TrimDomainPrefix(data.Avatar),
 		"introduce":       data.Introduce,
 		"email":           data.Email,
 		"fans_count":      data.FansCount,
@@ -306,7 +309,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 		UserId:      user.ID,
 		Username:    user.Username,
 		Nickname:    user.Nickname,
-		Avatar:      user.Avatar,
+		Avatar:      utils.FulfillImageOSSPrefix(user.Avatar),
 		Introduce:   user.Introduce,
 		WechatCount: user.WechatCount,
 		FansCount:   user.FansCount,
