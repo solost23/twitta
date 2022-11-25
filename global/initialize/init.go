@@ -12,4 +12,6 @@ func Initialize(filePath string) {
 	InitMongo()
 	// 初始化push grpc
 	InitPushClient()
+	// 初始化oss grpc
+	InitOSSClient()
 }
