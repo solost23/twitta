@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/mbobakov/grpc-consul-resolver v1.4.4
 	github.com/onsi/gomega v1.20.2 // indirect
-	github.com/solost23/go_interface v1.1.3
+	github.com/solost23/go_interface v1.1.10
 	github.com/solost23/tools v1.0.8
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0

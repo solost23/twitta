@@ -115,7 +115,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 
 func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (string, error) {
 	user := &models.User{}
-	result, err := UploadImg(user, "avatar", file)
+	result, err := UploadImg(c, user, "avatar", file)
 	if err != nil {
 		return "", err
 	}

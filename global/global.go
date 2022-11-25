@@ -2,6 +2,7 @@ package global
 
 import (
 	"Twitta/configs"
+	"github.com/solost23/go_interface/gen_go/oss"
 	"github.com/solost23/go_interface/gen_go/push"
 	"time"
 
@@ -16,4 +17,5 @@ var (
 	ServerConfig  = &configs.ServerConfig{}
 	RedisMapPool  = make(map[int]*redis.Client)
 	PushSrvClient push.PushClient
+	OSSSrvClient  oss.OssClient
 )

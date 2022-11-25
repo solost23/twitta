@@ -8,12 +8,12 @@ type ServerConfig struct {
 	PrometheusEnable bool        `mapstructure:"prometheus_enable"`
 	MongoConfig      MongoConf   `mapstructure:"mongo"`
 	RedisConfig      RedisConf   `mapstructure:"redis"`
-	MinioConfig      MinioConf   `mapstructure:"minio_storage"`
 	JWTConfig        JWTConf     `mapstructure:"jwt"`
 	Email            EmailConf   `mapstructure:"email"`
 	Zinc             Zinc        `mapstructure:"zinc"`
 	ConsulConfig     ConsulConf  `mapstructure:"consul"`
 	PushSrvConfig    PushSrvConf `mapstructure:"push"`
+	OSSSrvConfig     OSSSrvConf  `mapstructure:"oss"`
 }
 
 type MongoConf struct {
@@ -26,13 +26,6 @@ type MongoConf struct {
 
 type RedisConf struct {
 	Addr string `mapstructure:"addr"`
-}
-
-type MinioConf struct {
-	EndPoint        string `mapstructure:"end_point"`
-	AccessKeyId     string `mapstructure:"access_key_id"`
-	SecretAccessKey string `mapstructure:"secret_access_key"`
-	UserSsl         bool   `mapstructure:"user_ssl"`
 }
 
 type JWTConf struct {
@@ -61,5 +54,9 @@ type ConsulConf struct {
 }
 
 type PushSrvConf struct {
+	Name string `mapstructure:"name"`
+}
+
+type OSSSrvConf struct {
 	Name string `mapstructure:"name"`
 }
