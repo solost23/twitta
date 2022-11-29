@@ -17,12 +17,12 @@
 ## model
 ![model](Twitta.png)
 
-## 项目部署
+# Quick Start
 ```shell
-bash ./start.sh
+docker-compose up -d
 ```
 
-## 生成Swagger
+## 本地项目部署
 ```shell
-bash ./swagger.sh
+bash ./start.sh
 ```
