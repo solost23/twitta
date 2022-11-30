@@ -3,6 +3,7 @@ module Twitta
 go 1.16
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
@@ -11,12 +12,16 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/hashicorp/consul/api v1.12.0
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.2 // indirect
+	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/mbobakov/grpc-consul-resolver v1.4.4
 	github.com/onsi/gomega v1.20.2 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/solost23/go_interface v1.1.10
-	github.com/solost23/tools v1.0.8
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a

@@ -114,15 +114,16 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 }
 
 func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (string, error) {
-	user := &models.User{}
-	result, err := UploadImg(c, user, "avatar", file)
+	folder := "twitta.users.avatar"
+
+	url, err := UploadImg(0, folder, file.Filename, file)
 	if err != nil {
 		return "", err
 	}
 	// 对链接做处理
 	// eg:http://minio:9000/avatar/5ac8dd9f599264da59532bc31593b7b7.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20221125%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221125T033740Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=514d733ebc7a4e1b58d54b810a191dd9994d8745231045c7a0908b895c0c14db
 	// 应处理成: http://localhost:9000/avatar/5ac8dd9f599264da59532bc31593b7b7.jpeg，返回
-	return utils.FulfillImageOSSPrefix(utils.TrimDomainPrefix(result)), nil
+	return utils.FulfillImageOSSPrefix(utils.TrimDomainPrefix(url)), nil
 }
 
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
