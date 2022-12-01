@@ -12,7 +12,7 @@ import (
 func SetRouters(r *gin.Engine) {
 	group := r.Group("api")
 	initNoAuthRouter(group)
-	group.Use(middlewares.JWTAuth())
+	group.Use(middlewares.JWTAuth(), middlewares.AuthCheckRole())
 	initAuthRouter(group)
 }
 

@@ -3,6 +3,8 @@ module Twitta
 go 1.16
 
 require (
+	github.com/casbin/casbin/v2 v2.55.0
+	github.com/casbin/mongodb-adapter/v3 v3.4.1
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
