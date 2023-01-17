@@ -1,5 +1,5 @@
 package constants
 
 const (
-	Mongo = "Twitta"
+	Mongo = "twitta"
 )

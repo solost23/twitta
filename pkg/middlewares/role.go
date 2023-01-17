@@ -1,16 +1,16 @@
 package middlewares
 
 import (
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/response"
-	"Twitta/pkg/utils"
 	"errors"
 	"fmt"
 	"github.com/casbin/casbin/v2"
 	mongoadapter "github.com/casbin/mongodb-adapter/v3"
 	"github.com/gin-gonic/gin"
 	mongooptions "go.mongodb.org/mongo-driver/mongo/options"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/response"
+	"twitta/pkg/utils"
 )
 
 func AuthCheckRole() gin.HandlerFunc {

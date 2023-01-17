@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"Twitta/pkg/utils"
 	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -9,6 +8,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"time"
+	"twitta/pkg/utils"
 )
 
 func RequestLog() gin.HandlerFunc {

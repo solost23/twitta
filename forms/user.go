@@ -1,6 +1,6 @@
 package forms
 
-import "Twitta/pkg/models"
+import "twitta/pkg/models"
 
 type RegisterForm struct {
 	Username  string `json:"username" binding:"required"`

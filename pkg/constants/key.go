@@ -1,7 +1,7 @@
 package constants
 
 const (
-	RedisPrefix = "Twitta"
+	RedisPrefix = "twitta"
 
 	WebRedisPrefix    = RedisPrefix + "web_"
 	MobileRedisPrefix = RedisPrefix + "mobile_"

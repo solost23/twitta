@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"Twitta/global"
 	"fmt"
 	URL "net/url"
 	"strings"
+	"twitta/global"
 )
 
 func FulfillImageOSSPrefix(relativePath string) string {

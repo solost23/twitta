@@ -1,14 +1,14 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/models"
-	"Twitta/pkg/utils"
 	"errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+	"twitta/forms"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 

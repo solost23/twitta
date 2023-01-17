@@ -1,11 +1,11 @@
 package services
 
 import (
-	"Twitta/forms"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
 	"testing"
+	"twitta/forms"
 )
 
 func TestService_ChatList(t *testing.T) {

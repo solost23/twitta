@@ -1,8 +1,8 @@
 package initialize
 
 import (
-	"Twitta/global"
 	"time"
+	"twitta/global"
 )
 
 func InitLoc() {

@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"Twitta/global"
 	"context"
+	"twitta/global"
 
 	"github.com/go-redis/redis/v8"
 )

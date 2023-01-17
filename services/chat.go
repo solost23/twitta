@@ -1,13 +1,13 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/models"
-	"Twitta/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"twitta/forms"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
 )
 
 func (*Service) ChatList(c *gin.Context, id string) ([]*forms.ChatListResponse, error) {

@@ -1,10 +1,10 @@
 package routers
 
 import (
-	"Twitta/forms"
-	"Twitta/pkg/response"
-	"Twitta/pkg/utils"
-	"Twitta/services"
+	"twitta/forms"
+	"twitta/pkg/response"
+	"twitta/pkg/utils"
+	"twitta/services"
 
 	"github.com/gin-gonic/gin"
 )

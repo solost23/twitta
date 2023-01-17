@@ -1,12 +1,12 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/pkg/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
 	"testing"
+	"twitta/forms"
+	"twitta/pkg/utils"
 )
 
 func TestService_UserSearch(t *testing.T) {

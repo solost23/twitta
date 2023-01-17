@@ -1,9 +1,9 @@
 package services
 
 import (
-	"Twitta/global"
 	"github.com/go-gomail/gomail"
 	"go.uber.org/zap"
+	"twitta/global"
 )
 
 // 发送邮件服务: params: 主题、发送人名字、发送人地址、接收人名字、接受人地址、内容类型、内容

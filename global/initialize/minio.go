@@ -1,13 +1,13 @@
 package initialize
 
 import (
-	"Twitta/global"
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
 	"github.com/solost23/go_interface/gen_go/oss"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"twitta/global"
 )
 
 func InitOSSClient() {

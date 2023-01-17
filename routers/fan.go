@@ -1,10 +1,10 @@
 package routers
 
 import (
-	"Twitta/pkg/response"
-	"Twitta/pkg/utils"
-	"Twitta/services"
 	"github.com/gin-gonic/gin"
+	"twitta/pkg/response"
+	"twitta/pkg/utils"
+	"twitta/services"
 )
 
 func fanList(c *gin.Context) {

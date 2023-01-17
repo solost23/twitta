@@ -1,13 +1,6 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/global"
-	"Twitta/pkg/cache"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/middlewares"
-	"Twitta/pkg/models"
-	"Twitta/pkg/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +9,13 @@ import (
 	"mime/multipart"
 	"strconv"
 	"time"
+	"twitta/forms"
+	"twitta/global"
+	"twitta/pkg/cache"
+	"twitta/pkg/constants"
+	"twitta/pkg/middlewares"
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
 
 	"github.com/golang-jwt/jwt"
 
@@ -155,7 +155,7 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix(),
 			ExpiresAt: time.Now().Unix() + global.ServerConfig.JWTConfig.Duration,
-			Issuer:    "Twitta",
+			Issuer:    "twitta",
 		},
 	}
 	token, err := j.CreateToken(claims)

@@ -1,10 +1,6 @@
 package main
 
 import (
-	"Twitta/global"
-	"Twitta/global/initialize"
-	"Twitta/routers"
-	"Twitta/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -13,13 +9,17 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"twitta/global"
+	"twitta/global/initialize"
+	"twitta/routers"
+	"twitta/services"
 )
 
-// @title Twitta API
+// @title twitta API
 // @version 1.0.0
-// @description Twitta API documents
+// @description twitta API documents
 
-// @contact.name Twitta
+// @contact.name twitta
 
 // @securityDefinitions.basic BasicAuth
 // @host localhost:6565
@@ -29,10 +29,10 @@ func main() {
 	initialize.Initialize("./configs/config.yml")
 	// Version
 	if len(os.Args) > 1 && os.Args[1] == "version" {
-		fmt.Printf("Twitta version: %s\n", global.ServerConfig.Version)
+		fmt.Printf("twitta version: %s\n", global.ServerConfig.Version)
 		os.Exit(0)
 	}
-	zap.S().Infof("Starting Twitta %s", global.ServerConfig.Version)
+	zap.S().Infof("Starting twitta %s", global.ServerConfig.Version)
 
 	// HTTP init
 	app := gin.New()

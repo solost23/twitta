@@ -1,10 +1,10 @@
 package global
 
 import (
-	"Twitta/configs"
 	"github.com/solost23/go_interface/gen_go/oss"
 	"github.com/solost23/go_interface/gen_go/push"
 	"time"
+	"twitta/configs"
 
 	"github.com/go-redis/redis/v8"
 

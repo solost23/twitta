@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"Twitta/global"
 	"github.com/gin-gonic/gin"
+	"twitta/global"
 
 	ginprometheus "github.com/zinclabs/go-gin-prometheus"
 )
@@ -13,6 +13,6 @@ func SetPrometheus(app *gin.Engine) {
 		return
 	}
 
-	p := ginprometheus.NewPrometheus("Twitta", []*ginprometheus.Metric{})
+	p := ginprometheus.NewPrometheus("twitta", []*ginprometheus.Metric{})
 	p.Use(app)
 }

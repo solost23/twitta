@@ -1,10 +1,10 @@
 package services
 
 import (
-	"Twitta/global"
 	"context"
 	"fmt"
 	client "github.com/zinclabs/sdk-go-zincsearch"
+	"twitta/global"
 )
 
 type Zinc struct {

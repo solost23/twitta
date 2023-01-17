@@ -70,9 +70,9 @@ definitions:
 host: localhost:6565
 info:
   contact:
-    name: Twitta
-  description: Twitta API documents
-  title: Twitta API
+    name: twitta
+  description: twitta API documents
+  title: twitta API
   version: 1.0.0
 paths:
   /api/login:

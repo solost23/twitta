@@ -1,9 +1,6 @@
 package services
 
 import (
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/utils"
 	"context"
 	"fmt"
 	"github.com/gabriel-vasile/mimetype"
@@ -15,6 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/utils"
 )
 
 func UploadImg(userId uint, folderName string, postFilename string, file *multipart.FileHeader) (string, error) {

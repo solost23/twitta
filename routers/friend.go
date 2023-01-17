@@ -1,11 +1,11 @@
 package routers
 
 import (
-	"Twitta/forms"
-	"Twitta/pkg/response"
-	"Twitta/pkg/utils"
-	"Twitta/services"
 	"github.com/gin-gonic/gin"
+	"twitta/forms"
+	"twitta/pkg/response"
+	"twitta/pkg/utils"
+	"twitta/services"
 )
 
 func friendApplicationSend(c *gin.Context) {

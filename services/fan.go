@@ -1,17 +1,17 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/models"
-	"Twitta/pkg/utils"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+	"twitta/forms"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
 )
 
 func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {

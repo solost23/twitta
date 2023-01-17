@@ -1,10 +1,10 @@
 package initialize
 
 import (
-	"Twitta/global"
-	"Twitta/pkg/mongoos"
 	"context"
 	"time"
+	"twitta/global"
+	"twitta/pkg/mongoos"
 )
 
 func InitMongo() {

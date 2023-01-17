@@ -1,9 +1,9 @@
 package routers
 
 import (
-	"Twitta/global"
-	"Twitta/pkg/middlewares"
 	"github.com/gin-gonic/gin"
+	"twitta/global"
+	"twitta/pkg/middlewares"
 )
 
 func Setup(app *gin.Engine) {

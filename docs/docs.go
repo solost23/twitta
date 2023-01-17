@@ -11,7 +11,7 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Twitta"
+            "name": "twitta"
         },
         "version": "{{.Version}}"
     },
@@ -173,8 +173,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:6565",
 	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
-	Title:            "Twitta API",
-	Description:      "Twitta API documents",
+	Title:            "twitta API",
+	Description:      "twitta API documents",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

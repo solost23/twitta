@@ -1,16 +1,16 @@
 package services
 
 import (
-	"Twitta/forms"
-	"Twitta/global"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/models"
-	"Twitta/pkg/utils"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+	"twitta/forms"
+	"twitta/global"
+	"twitta/pkg/constants"
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
 )
 
 func (*Service) CommentList(c *gin.Context, id string) ([]*forms.CommentListResponse, error) {

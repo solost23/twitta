@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"Twitta/global"
+	"twitta/global"
 
 	"github.com/spf13/viper"
 )

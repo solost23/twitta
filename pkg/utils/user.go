@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"Twitta/pkg/models"
+	"twitta/pkg/models"
 
 	"github.com/gin-gonic/gin"
 )

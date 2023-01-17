@@ -1,14 +1,14 @@
 package middlewares
 
 import (
-	"Twitta/global"
-	"Twitta/pkg/cache"
-	"Twitta/pkg/constants"
-	"Twitta/pkg/models"
-	"Twitta/pkg/response"
 	"encoding/json"
 	"errors"
 	"time"
+	"twitta/global"
+	"twitta/pkg/cache"
+	"twitta/pkg/constants"
+	"twitta/pkg/models"
+	"twitta/pkg/response"
 
 	"github.com/gin-gonic/gin"
 

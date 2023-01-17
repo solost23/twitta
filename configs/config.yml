@@ -6,14 +6,14 @@ prometheus_enable: false
 
 mongo:
   hosts:
-    - "mongo:27017"
+    - "localhost:27017"
   auth_source: ""
   username: ""
   password: ""
   timeout: 30
 
 redis:
-  addr: "redis:6379"
+  addr: "localhost:6379"
 
 jwt:
   key: "ajgiengijheiganege"
@@ -24,7 +24,7 @@ email:
   port: 25
   # 此密码为开启smtp/pop3的授权码,非真实邮箱密码
   password: "CCRGOOJZTIBWQASI"
-  send_person_name: "Twitta"
+  send_person_name: "twitta"
   send_person_addr: "tianyuanyuans@163.com"
 
 zinc:
@@ -46,7 +46,7 @@ kafka:
       - "email"
 
 consul:
-  host: "consul"
+  host: "localhost"
   port: "8500"
 
 static-oss:

@@ -1,6 +1,6 @@
 package forms
 
-import "Twitta/pkg/utils"
+import "twitta/pkg/utils"
 
 type SearchForm struct {
 	utils.PageForm
