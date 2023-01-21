@@ -1,12 +1,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 	"twitta/global"
@@ -25,15 +27,27 @@ import (
 // @host localhost:6565
 // @BasePath /
 // @schemes http https
-func main() {
-	initialize.Initialize("./configs/config.yml")
-	// Version
-	if len(os.Args) > 1 && os.Args[1] == "version" {
-		fmt.Printf("twitta version: %s\n", global.ServerConfig.Version)
-		os.Exit(0)
-	}
-	zap.S().Infof("Starting twitta %s", global.ServerConfig.Version)
 
+var (
+	WebConfigPath = "configs/config.yml"
+	WebLogPath    = "logs"
+	version       = "__BUILD_VERSION_"
+	execDir       string
+	st, v, V      bool
+)
+
+func main() {
+	flag.StringVar(&execDir, "d", ".", "项目目录")
+	flag.BoolVar(&v, "v", false, "查看版本号")
+	flag.BoolVar(&V, "V", false, "查看版本号")
+	flag.BoolVar(&st, "s", false, "项目状态")
+	flag.Parse()
+	if v || V {
+		fmt.Println(version)
+		os.Exit(-1)
+	}
+
+	initialize.Initialize(path.Join(execDir, WebConfigPath))
 	// HTTP init
 	app := gin.New()
 	routers.Setup(app)
