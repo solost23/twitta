@@ -14,7 +14,6 @@ import (
 	"twitta/global"
 	"twitta/global/initialize"
 	"twitta/routers"
-	"twitta/services"
 )
 
 // @title twitta API
@@ -59,10 +58,6 @@ func main() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
-	// 启动消费函数
-	go func() {
-		services.ConsumeEmailMessage()
-	}()
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			if err == http.ErrServerClosed {

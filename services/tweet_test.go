@@ -1,13 +1,13 @@
 package services
 
 import (
-	"Twitta/global/initialize"
-	"Twitta/pkg/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
 	"os"
 	"testing"
+	"twitta/global/initialize"
+	"twitta/pkg/models"
 )
 
 func TestMain(m *testing.M) {

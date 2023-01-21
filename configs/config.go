@@ -9,7 +9,6 @@ type ServerConfig struct {
 	MongoConfig      MongoConf     `mapstructure:"mongo"`
 	RedisConfig      RedisConf     `mapstructure:"redis"`
 	JWTConfig        JWTConf       `mapstructure:"jwt"`
-	Email            EmailConf     `mapstructure:"email"`
 	Zinc             Zinc          `mapstructure:"zinc"`
 	ConsulConfig     ConsulConf    `mapstructure:"consul"`
 	StaticOSS        StaticOSSConf `mapstructure:"static-oss"`
@@ -32,14 +31,6 @@ type RedisConf struct {
 type JWTConf struct {
 	Key      string `mapstructure:"key"`
 	Duration int64  `mapstructure:"duration"`
-}
-
-type EmailConf struct {
-	Host           string `mapstructure:"host"`
-	Port           int    `mapstructure:"port"`
-	Password       string `mapstructure:"password"`
-	SendPersonName string `mapstructure:"send_person_name"`
-	SendPersonAddr string `mapstructure:"send_person_addr"`
 }
 
 type Zinc struct {

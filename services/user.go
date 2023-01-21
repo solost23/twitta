@@ -7,7 +7,6 @@ import (
 	"github.com/solost23/go_interface/gen_go/common"
 	"github.com/solost23/go_interface/gen_go/push"
 	"mime/multipart"
-	"strconv"
 	"time"
 	"twitta/forms"
 	"twitta/global"
@@ -91,16 +90,11 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 				OperatorUid: 55,
 			},
 			Email: &push.Email{
-				Host:           global.ServerConfig.Email.Host,
-				Port:           strconv.Itoa(global.ServerConfig.Email.Port),
-				Password:       global.ServerConfig.Email.Password,
-				SendPersonName: global.ServerConfig.Email.SendPersonName,
-				SendPersonAddr: global.ServerConfig.Email.SendPersonAddr,
-				Topic:          "register",
-				Name:           params.Username,
-				Addr:           params.Email,
-				ContentType:    "text/plain",
-				Content:        fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+				Topic:       "register",
+				Name:        params.Username,
+				Addr:        params.Email,
+				ContentType: "text/plain",
+				Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
 			},
 		})
 		if err != nil {
@@ -197,16 +191,11 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 				OperatorUid: 56,
 			},
 			Email: &push.Email{
-				Host:           global.ServerConfig.Email.Host,
-				Port:           strconv.Itoa(global.ServerConfig.Email.Port),
-				Password:       global.ServerConfig.Email.Password,
-				SendPersonName: global.ServerConfig.Email.SendPersonName,
-				SendPersonAddr: global.ServerConfig.Email.SendPersonAddr,
-				Topic:          "login",
-				Name:           user.Username,
-				Addr:           user.Email,
-				ContentType:    "text/plain",
-				Content:        fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+				Topic:       "login",
+				Name:        user.Username,
+				Addr:        user.Email,
+				ContentType: "text/plain",
+				Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
 			},
 		})
 		if err != nil {
