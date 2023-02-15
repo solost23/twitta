@@ -1,51 +1,52 @@
-version: "1.0.1"
-debug_mode: "debug"
-addr: ":6565"
-time_location: "Asia/Shanghai"
-prometheus_enable: false
+#version: "1.0.1"
+#debug_mode: "debug"
+#addr: ":6565"
+#time_location: "Asia/Shanghai"
+#prometheus_enable: false
+config_path: api/twitta
 
-mongo:
-  hosts:
-    - "localhost:27017"
-  auth_source: ""
-  username: ""
-  password: ""
-  timeout: 30
-
-redis:
-  addr: "localhost:6379"
-
-jwt:
-  key: "ajgiengijheiganege"
-  duration: 2678400
-
-zinc:
-  host: "http://localhost"
-  port: 4080
-  username: "admin"
-  password: "Complexpass#123"
-
-kafka:
-  consumer:
-    addrs:
-      - "127.0.0.1:9093"
-    topics:
-      - "email"
-  producer:
-    addrs:
-      - "127.0.0.1:9093"
-    topics:
-      - "email"
+#mongo:
+#  hosts:
+#    - "localhost:27017"
+#  auth_source: ""
+#  username: ""
+#  password: ""
+#  timeout: 30
+#
+#redis:
+#  addr: "localhost:6379"
+#
+#jwt:
+#  key: "ajgiengijheiganege"
+#  duration: 2678400
+#
+#zinc:
+#  host: "http://localhost"
+#  port: 4080
+#  username: "admin"
+#  password: "Complexpass#123"
+#
+#kafka:
+#  consumer:
+#    addrs:
+#      - "127.0.0.1:9093"
+#    topics:
+#      - "email"
+#  producer:
+#    addrs:
+#      - "127.0.0.1:9093"
+#    topics:
+#      - "email"
 
 consul:
   host: "localhost"
   port: "8500"
 
-static-oss:
-  domain: "http://127.0.0.1:9000"
-
-push:
-  name: "push_service"
-
-oss:
-  name: "oss_service"
+#static-oss:
+#  domain: "http://127.0.0.1:9000"
+#
+#push:
+#  name: "push_service"
+#
+#oss:
+#  name: "oss_service"

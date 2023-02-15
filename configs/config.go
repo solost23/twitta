@@ -6,6 +6,7 @@ type ServerConfig struct {
 	TimeLocation     string        `mapstructure:"time_location"`
 	Addr             string        `mapstructure:"addr"`
 	PrometheusEnable bool          `mapstructure:"prometheus_enable"`
+	ConfigPath       string        `mapstructure:"config_path"`
 	MongoConfig      MongoConf     `mapstructure:"mongo"`
 	RedisConfig      RedisConf     `mapstructure:"redis"`
 	JWTConfig        JWTConf       `mapstructure:"jwt"`
