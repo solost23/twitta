@@ -2,17 +2,20 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"twitta/pkg/middlewares"
-
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "twitta/docs"
+	"twitta/pkg/middlewares"
 )
 
 func SetRouters(r *gin.Engine) {
 	group := r.Group("api")
 	initNoAuthRouter(group)
-	group.Use(middlewares.JWTAuth(), middlewares.AuthCheckRole())
+	group.Use(
+		middlewares.JWTAuth(),
+		//middlewares.AuthCheckRole(),
+	)
+
 	initAuthRouter(group)
 }
 

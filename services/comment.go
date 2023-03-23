@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -47,14 +48,31 @@ func (*Service) CommentList(c *gin.Context, id string) ([]*forms.CommentListResp
 	for _, comment := range comments {
 		commentListResponse = append(commentListResponse, &forms.CommentListResponse{
 			UserId:    comment.UserId,
+			PID:       comment.Parent,
 			Username:  userIdToInfoMaps[comment.UserId].Username,
 			Avatar:    userIdToInfoMaps[comment.UserId].Avatar,
 			Introduce: userIdToInfoMaps[comment.UserId].Introduce,
 			Id:        comment.ID,
 			Content:   comment.Content,
+			Children:  nil,
 		})
 	}
-	return commentListResponse, nil
+
+	result := make([]*forms.CommentListResponse, 0)
+	arrNode := make([]utils.TreeNode, len(commentListResponse))
+	for i := 0; i < len(commentListResponse); i++ {
+		arrNode[i] = commentListResponse[i]
+	}
+	rootNodes := utils.BuildTrees(arrNode)
+	rootNodesByte, err := json.Marshal(rootNodes)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(rootNodesByte, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (*Service) CommentThumb(c *gin.Context, id string) error {
