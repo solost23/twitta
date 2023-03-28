@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
-	"github.com/solost23/protopb/gen/go/protos/push"
+	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"twitta/global"
 )
 
-func InitPushClient() {
+func InitESClient() {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
 	target := fmt.Sprintf("consul://%s:%d/%s",
-		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.PushSrvConfig.Name)
+		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.ESSrvConfig.Name)
 
 	cc, err := grpc.Dial(
 		target,
@@ -26,5 +26,5 @@ func InitPushClient() {
 		panic(err)
 	}
 
-	global.PushSrvClient = push.NewPushClient(cc)
+	global.ESSrvClient = es_service.NewSearchClient(cc)
 }

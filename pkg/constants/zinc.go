@@ -1,6 +1,6 @@
 package constants
 
 const (
-	ZINCINDEXTWEET = "twitta_tweet"
-	ZINCINDEXUSER  = "twitta_user"
+	ESCINDEXTWEET = "twitta_tweet"
+	ESCINDEXUSER  = "twitta_user"
 )

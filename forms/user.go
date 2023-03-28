@@ -1,6 +1,9 @@
 package forms
 
-import "twitta/pkg/models"
+import (
+	"twitta/pkg/models"
+	"twitta/pkg/utils"
+)
 
 type RegisterForm struct {
 	Username  string `json:"username" binding:"required"`
@@ -35,8 +38,8 @@ type UserUpdateForm struct {
 	Introduce string `json:"introduce"`
 }
 
-type UserDetailResponse struct {
-	UserId      string `json:"userId"`
+type UserDetail struct {
+	UserId      string `json:"id"`
 	Username    string `json:"username"`
 	Nickname    string `json:"nickname"`
 	Avatar      string `json:"avatar"`
@@ -44,4 +47,9 @@ type UserDetailResponse struct {
 	WechatCount int64  `json:"whatCount"`
 	FansCount   int64  `json:"fansCount"`
 	CreatedAt   string `json:"createdAt"`
+}
+
+type UserSearch struct {
+	utils.PageList
+	Records []*UserDetail `json:"records"`
 }

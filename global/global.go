@@ -1,8 +1,9 @@
 package global
 
 import (
-	"github.com/solost23/go_interface/gen_go/oss"
-	"github.com/solost23/go_interface/gen_go/push"
+	es_service "github.com/solost23/protopb/gen/go/protos/es"
+	"github.com/solost23/protopb/gen/go/protos/oss"
+	"github.com/solost23/protopb/gen/go/protos/push"
 	"time"
 	"twitta/configs"
 
@@ -18,4 +19,5 @@ var (
 	RedisMapPool  = make(map[int]*redis.Client)
 	PushSrvClient push.PushClient
 	OSSSrvClient  oss.OssClient
+	ESSrvClient   es_service.SearchClient
 )

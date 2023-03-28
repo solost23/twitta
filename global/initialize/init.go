@@ -14,4 +14,6 @@ func Initialize(filePath string) {
 	InitPushClient()
 	// 初始化oss grpc
 	InitOSSClient()
+	// 初始化es grpc
+	InitESClient()
 }

@@ -1,8 +1,12 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
+	"github.com/solost23/protopb/gen/go/protos/common"
+	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 	"time"
 	"twitta/forms"
 	"twitta/global"
@@ -35,20 +39,19 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		return err
 	}
 
-	err = NewZinc().InsertDocument(c, constants.ZINCINDEXTWEET, data.ID, map[string]interface{}{
-		"basemodel": map[string]interface{}{
-			"created-at": data.BaseModel.CreatedAt,
-			"updated-at": data.BaseModel.UpdatedAt,
-			"deleted-at": data.BaseModel.DeletedAt,
+	documentJson, _ := json.Marshal(data)
+	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+		Header: &common.RequestHeader{
+			Requester:   user.Username,
+			OperatorUid: -1,
+			TraceId:     -1,
 		},
-		"user_id":       data.UserID,
-		"title":         data.Title,
-		"content":       data.Content,
-		"thumb_count":   data.ThumbCount,
-		"comment_count": data.CommentCount,
+		Index:      constants.ESCINDEXTWEET,
+		DocumentId: data.ID,
+		Document:   string(documentJson),
 	})
 	if err != nil {
-		return err
+		zap.S().Errorf(err.Error())
 	}
 	return nil
 }
@@ -69,9 +72,18 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	err = NewZinc().DeleteDocument(c, constants.ZINCINDEXTWEET, id)
+
+	_, err = global.ESSrvClient.Delete(c, &es_service.DeleteRequest{
+		Header: &common.RequestHeader{
+			Requester:   user.Username,
+			OperatorUid: -1,
+			TraceId:     -1,
+		},
+		Index:      constants.ESCINDEXTWEET,
+		DocumentId: id,
+	})
 	if err != nil {
-		return err
+		zap.S().Errorf(err.Error())
 	}
 	return nil
 }
@@ -243,67 +255,67 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 }
 
 func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.TweetListResponse, error) {
-	db := global.DB
+	//db := global.DB
 
 	// 全局搜索出推文内容
-	from := int32((params.Page - 1) * params.Size)
-	size := from + int32(params.Size) - 1
-	searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
-	if err != nil {
-		return nil, err
-	}
-	tweetIds := make([]string, 0, len(searchResults))
-	for _, searchResult := range searchResults {
-		tweetIds = append(tweetIds, *searchResult.Id)
-	}
-	tweets := make([]*models.Tweet, 0, len(searchResults))
-	err = models.NewTweet().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": tweetIds}}, &tweets)
-	if err != nil {
-		return nil, err
-	}
-	tweetIdToThumbCommentNumMaps := make(map[string]struct {
-		ThumbCount   int64
-		CommentCount int64
-	}, len(tweets))
-	for _, tweet := range tweets {
-		tweetIdToThumbCommentNumMaps[tweet.ID] = struct {
-			ThumbCount   int64
-			CommentCount int64
-		}{ThumbCount: tweet.ThumbCount, CommentCount: tweet.CommentCount}
-	}
-	userIds := make([]string, 0, len(searchResults))
-	for _, searchResult := range searchResults {
-		userIds = append(userIds, searchResult.Source["user_id"].(string))
-	}
-	users := make([]*models.User, 0)
-	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
-	if err != nil {
-		return nil, err
-	}
-	userIdToInfoMaps := make(map[string]struct {
-		Username string
-		Avatar   string
-	})
-	for _, user := range users {
-		userIdToInfoMaps[user.ID] = struct {
-			Username string
-			Avatar   string
-		}{Username: user.Username, Avatar: user.Avatar}
-	}
-	// 封装数据
-	tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(searchResults))
-	for _, searchResult := range searchResults {
-		tweetSearchResponse = append(tweetSearchResponse, &forms.TweetListResponse{
-			UserId:       searchResult.Source["user_id"].(string),
-			Username:     userIdToInfoMaps[searchResult.Source["user_id"].(string)].Username,
-			Avatar:       userIdToInfoMaps[searchResult.Source["user_id"].(string)].Avatar,
-			TweetId:      *searchResult.Id,
-			Title:        searchResult.Source["title"].(string),
-			Content:      searchResult.Source["content"].(string),
-			TweetTime:    searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
-			ThumbCount:   tweetIdToThumbCommentNumMaps[*searchResult.Id].ThumbCount,
-			CommentCount: tweetIdToThumbCommentNumMaps[*searchResult.Id].CommentCount,
-		})
-	}
-	return tweetSearchResponse, nil
+	//from := int32((params.Page - 1) * params.Size)
+	//size := from + int32(params.Size) - 1
+	//searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//tweetIds := make([]string, 0, len(searchResults))
+	//for _, searchResult := range searchResults {
+	//	tweetIds = append(tweetIds, *searchResult.Id)
+	//}
+	//tweets := make([]*models.Tweet, 0, len(searchResults))
+	//err = models.NewTweet().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": tweetIds}}, &tweets)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//tweetIdToThumbCommentNumMaps := make(map[string]struct {
+	//	ThumbCount   int64
+	//	CommentCount int64
+	//}, len(tweets))
+	//for _, tweet := range tweets {
+	//	tweetIdToThumbCommentNumMaps[tweet.ID] = struct {
+	//		ThumbCount   int64
+	//		CommentCount int64
+	//	}{ThumbCount: tweet.ThumbCount, CommentCount: tweet.CommentCount}
+	//}
+	//userIds := make([]string, 0, len(searchResults))
+	//for _, searchResult := range searchResults {
+	//	userIds = append(userIds, searchResult.Source["user_id"].(string))
+	//}
+	//users := make([]*models.User, 0)
+	//err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//userIdToInfoMaps := make(map[string]struct {
+	//	Username string
+	//	Avatar   string
+	//})
+	//for _, user := range users {
+	//	userIdToInfoMaps[user.ID] = struct {
+	//		Username string
+	//		Avatar   string
+	//	}{Username: user.Username, Avatar: user.Avatar}
+	//}
+	//// 封装数据
+	//tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(searchResults))
+	//for _, searchResult := range searchResults {
+	//	tweetSearchResponse = append(tweetSearchResponse, &forms.TweetListResponse{
+	//		UserId:       searchResult.Source["user_id"].(string),
+	//		Username:     userIdToInfoMaps[searchResult.Source["user_id"].(string)].Username,
+	//		Avatar:       userIdToInfoMaps[searchResult.Source["user_id"].(string)].Avatar,
+	//		TweetId:      *searchResult.Id,
+	//		Title:        searchResult.Source["title"].(string),
+	//		Content:      searchResult.Source["content"].(string),
+	//		TweetTime:    searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
+	//		ThumbCount:   tweetIdToThumbCommentNumMaps[*searchResult.Id].ThumbCount,
+	//		CommentCount: tweetIdToThumbCommentNumMaps[*searchResult.Id].CommentCount,
+	//	})
+	//}
+	return nil, nil
 }

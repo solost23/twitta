@@ -10,11 +10,11 @@ type ServerConfig struct {
 	MongoConfig      MongoConf     `mapstructure:"mongo"`
 	RedisConfig      RedisConf     `mapstructure:"redis"`
 	JWTConfig        JWTConf       `mapstructure:"jwt"`
-	Zinc             Zinc          `mapstructure:"zinc"`
 	ConsulConfig     ConsulConf    `mapstructure:"consul"`
 	StaticOSS        StaticOSSConf `mapstructure:"static-oss"`
 	PushSrvConfig    PushSrvConf   `mapstructure:"push"`
 	OSSSrvConfig     OSSSrvConf    `mapstructure:"oss"`
+	ESSrvConfig      ESSrvConf     `mapstructure:"es"`
 }
 
 type MongoConf struct {
@@ -34,13 +34,6 @@ type JWTConf struct {
 	Duration int64  `mapstructure:"duration"`
 }
 
-type Zinc struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
-}
-
 type ConsulConf struct {
 	Host string `mapstructure:"host"`
 	Port int    `mapstructure:"port"`
@@ -55,5 +48,9 @@ type PushSrvConf struct {
 }
 
 type OSSSrvConf struct {
+	Name string `mapstructure:"name"`
+}
+
+type ESSrvConf struct {
 	Name string `mapstructure:"name"`
 }

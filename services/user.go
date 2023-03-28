@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/solost23/go_interface/gen_go/common"
-	"github.com/solost23/go_interface/gen_go/push"
+	"github.com/solost23/protopb/gen/go/protos/common"
+	es_service "github.com/solost23/protopb/gen/go/protos/es"
+	"github.com/solost23/protopb/gen/go/protos/push"
+	"go.uber.org/zap"
 	"mime/multipart"
 	"time"
 	"twitta/forms"
@@ -58,28 +60,20 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		return err
 	}
 
-	// 将用户数据存入zinc
-	err = NewZinc().InsertDocument(c, constants.ZINCINDEXUSER, data.ID, map[string]interface{}{
-		"basemodel": map[string]interface{}{
-			"created-at": data.BaseModel.CreatedAt,
-			"updated-at": data.BaseModel.UpdatedAt,
-			"deleted-at": data.BaseModel.DeletedAt,
+	// 将用户数据存入es
+	documentJson, _ := json.Marshal(data)
+	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+		Header: &common.RequestHeader{
+			Requester:   data.Username,
+			OperatorUid: -1,
+			TraceId:     -1,
 		},
-		"username":        data.Username,
-		"password":        data.Password,
-		"nickname":        data.Nickname,
-		"mobile":          data.Mobile,
-		"role":            data.Role,
-		"avatar":          utils.TrimDomainPrefix(data.Avatar),
-		"introduce":       data.Introduce,
-		"email":           data.Email,
-		"fans_count":      data.FansCount,
-		"wechat_count":    data.WechatCount,
-		"last_login_time": data.LastLoginTime,
-		"disabled":        data.Disabled,
+		Index:      constants.ESCINDEXUSER,
+		DocumentId: data.ID,
+		Document:   string(documentJson),
 	})
 	if err != nil {
-		return err
+		zap.S().Error(err.Error())
 	}
 
 	// 调用邮件发送服务发送邮件
@@ -98,7 +92,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 			},
 		})
 		if err != nil {
-			return err
+			zap.S().Errorf(err.Error())
 		}
 		if reply.ErrorInfo.GetCode() != 0 {
 			return errors.New(reply.ErrorInfo.GetMsg())
@@ -184,27 +178,24 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 	}
 
 	// 调用邮件发送服务发送邮件
-	if len(user.Email) >= 0 {
-		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
-			Header: &common.RequestHeader{
-				TraceId:     6678678,
-				OperatorUid: 56,
-			},
-			Email: &push.Email{
-				Topic:       "login",
-				Name:        user.Username,
-				Addr:        user.Email,
-				ContentType: "text/plain",
-				Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if reply.ErrorInfo.GetCode() != 0 {
-			return nil, errors.New(reply.ErrorInfo.GetMsg())
-		}
-	}
+	//if len(user.Email) >= 0 {
+	//	_, err = global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+	//		Header: &common.RequestHeader{
+	//			TraceId:     6678678,
+	//			OperatorUid: 56,
+	//		},
+	//		Email: &push.Email{
+	//			Topic:       "login",
+	//			Name:        user.Username,
+	//			Addr:        user.Email,
+	//			ContentType: "text/plain",
+	//			Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+	//		},
+	//	})
+	//	if err != nil {
+	//		zap.S().Errorf(err.Error())
+	//	}
+	//}
 
 	return response, err
 }
@@ -253,38 +244,40 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 	if err != nil {
 		return err
 	}
-	// 拿到id 更新zinc数据
+
+	// 拿到id 更新es数据
 	// 删除 + 插入 = 更新
-	err = NewZinc().DeleteDocument(c, constants.ZINCINDEXUSER, user.ID)
-	if err != nil {
-		return err
-	}
-	err = NewZinc().InsertDocument(c, constants.ZINCINDEXUSER, user.ID, map[string]interface{}{
-		"basemodel": map[string]interface{}{
-			"created-at": data.BaseModel.CreatedAt,
-			"updated-at": data.BaseModel.UpdatedAt,
-			"deleted-at": data.BaseModel.DeletedAt,
+	_, err = global.ESSrvClient.Delete(c, &es_service.DeleteRequest{
+		Header: &common.RequestHeader{
+			Requester:   data.Username,
+			OperatorUid: -1,
+			TraceId:     -1,
 		},
-		"username":        data.Username,
-		"password":        data.Password,
-		"nickname":        data.Nickname,
-		"mobile":          data.Mobile,
-		"role":            data.Role,
-		"avatar":          utils.TrimDomainPrefix(data.Avatar),
-		"introduce":       data.Introduce,
-		"email":           data.Email,
-		"fans_count":      data.FansCount,
-		"wechat_count":    data.WechatCount,
-		"last_login_time": data.LastLoginTime,
-		"disabled":        data.Disabled,
+		Index:      constants.ESCINDEXUSER,
+		DocumentId: data.ID,
 	})
 	if err != nil {
-		return err
+		zap.S().Errorf(err.Error())
 	}
+	documentJson, _ := json.Marshal(data)
+	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+		Header: &common.RequestHeader{
+			Requester:   data.Username,
+			OperatorUid: -1,
+			TraceId:     -1,
+		},
+		Index:      constants.ESCINDEXUSER,
+		DocumentId: data.ID,
+		Document:   string(documentJson),
+	})
+	if err != nil {
+		zap.S().Errorf(err.Error())
+	}
+
 	return nil
 }
 
-func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse, error) {
+func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
 	db := global.DB
 
 	user := &models.User{}
@@ -295,7 +288,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, errors.New(fmt.Sprintf("不存在此用户"))
 	}
-	userDetailResponse := &forms.UserDetailResponse{
+	userDetailResponse := &forms.UserDetail{
 		UserId:      user.ID,
 		Username:    user.Username,
 		Nickname:    user.Nickname,
@@ -308,49 +301,41 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetailResponse
 	return userDetailResponse, nil
 }
 
-func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.UserDetailResponse, error) {
-	db := global.DB
+func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.UserSearch, error) {
 
-	// 直接从zinc中搜索数据，然后返回搜索到的数据
-	from := int32((params.Page - 1) * params.Size)
-	size := from + int32(params.Size) - 1
-	searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXUSER, params.Keyword, from, size)
+	searchResult, err := global.ESSrvClient.Search(c, &es_service.SearchRequest{
+		Header: &common.RequestHeader{
+			Requester:   "search_user",
+			OperatorUid: -1,
+		},
+		ShouldQuery: &es_service.Query{
+			MatchQueries: []*es_service.MatchQuery{
+				{Field: "Username", Value: params.Keyword},
+			},
+		},
+		Page:   int32(params.Page),
+		Size:   int32(params.Size),
+		Pretty: true,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	// 求出粉丝数和关注数的映射关系
-	userIds := make([]string, 0, len(searchResults))
-	for _, searchResult := range searchResults {
-		userIds = append(userIds, *searchResult.Id)
+	records := make([]*forms.UserDetail, 0, len(searchResult.Records))
+	for _, search := range searchResult.Records {
+		record := &forms.UserDetail{}
+		_ = json.Unmarshal([]byte(search), record)
+		records = append(records, record)
 	}
-	users := make([]*models.User, 0, len(searchResults))
-	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
-	if err != nil {
-		return nil, err
+
+	result := &forms.UserSearch{
+		Records: records,
+		PageList: utils.PageList{
+			Size:    int(searchResult.PageList.GetSize()),
+			Pages:   searchResult.PageList.GetPages(),
+			Total:   searchResult.PageList.GetTotal(),
+			Current: int(searchResult.PageList.GetCurrent()),
+		},
 	}
-	userIdToFansWechatNumMaps := make(map[string]struct {
-		FansCount   int64
-		WechatCount int64
-	}, len(users))
-	for _, user := range users {
-		userIdToFansWechatNumMaps[user.ID] = struct {
-			FansCount   int64
-			WechatCount int64
-		}{FansCount: user.FansCount, WechatCount: user.WechatCount}
-	}
-	userSearchResponse := make([]*forms.UserDetailResponse, 0, len(searchResults))
-	for _, searchResult := range searchResults {
-		userSearchResponse = append(userSearchResponse, &forms.UserDetailResponse{
-			UserId:      *searchResult.Id,
-			Username:    searchResult.Source["username"].(string),
-			Nickname:    searchResult.Source["nickname"].(string),
-			Avatar:      searchResult.Source["avatar"].(string),
-			Introduce:   searchResult.Source["introduce"].(string),
-			WechatCount: userIdToFansWechatNumMaps[*searchResult.Id].WechatCount,
-			FansCount:   userIdToFansWechatNumMaps[*searchResult.Id].FansCount,
-			CreatedAt:   searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
-		})
-	}
-	return userSearchResponse, nil
+	return result, nil
 }
