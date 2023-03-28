@@ -313,9 +313,10 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.Use
 				{Field: "Username", Value: params.Keyword},
 			},
 		},
-		Page:   int32(params.Page),
-		Size:   int32(params.Size),
-		Pretty: true,
+		Indices: []string{constants.ESCINDEXUSER},
+		Page:    int32(params.Page),
+		Size:    int32(params.Size),
+		Pretty:  true,
 	})
 	if err != nil {
 		return nil, err
