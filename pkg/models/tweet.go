@@ -8,12 +8,12 @@ import (
 
 type Tweet struct {
 	BaseModel
-	ID           string `bson:"_id"`
-	UserID       string `bson:"user_id"`
-	Title        string `bson:"title"`
-	Content      string `bson:"content"`
-	ThumbCount   int64  `bson:"thumb_count"`
-	CommentCount int64  `bson:"comment_count"`
+	ID           string `json:"id" bson:"_id"`
+	UserID       string `json:"userId" bson:"user_id"`
+	Title        string `json:"title" bson:"title"`
+	Content      string `json:"content" bson:"content"`
+	ThumbCount   int64  `json:"thumbCount" bson:"thumb_count"`
+	CommentCount int64  `json:"commentCount" bson:"comment_count"`
 }
 
 func NewTweet() Interface {

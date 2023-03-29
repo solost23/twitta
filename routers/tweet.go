@@ -36,7 +36,18 @@ func tweetDelete(c *gin.Context) {
 }
 
 func tweetList(c *gin.Context) {
-	result, err := services.NewService().TweetList(c)
+	params := &utils.PageForm{}
+	if err := utils.DefaultGetValidParams(c, params); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	if params.Page <= 0 {
+		params.Page = 1
+	}
+	if params.Size <= 0 {
+		params.Size = 10
+	}
+	result, err := services.NewService().TweetList(c, params)
 	if err != nil {
 		response.Error(c, 2001, err)
 		return

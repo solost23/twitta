@@ -16,7 +16,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/mbobakov/grpc-consul-resolver v1.4.4
-	github.com/solost23/protopb v1.0.9
+	github.com/solost23/protopb v1.1.0
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/files v1.0.0

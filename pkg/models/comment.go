@@ -9,12 +9,12 @@ import (
 
 type Comment struct {
 	BaseModel
-	ID      string `bson:"_id"`
-	UserId  string `bson:"user_id"`
-	TweetId string `bson:"tweet_id"`
-	Content string `bson:"content"`
-	Parent  string `bson:"parent"`
-	Type    uint   `bson:"type" comment:"评论类型 0: 点赞 1: 评论"`
+	ID      string `json:"id" bson:"_id"`
+	UserId  string `json:"userId" bson:"user_id"`
+	TweetId string `json:"tweetId" bson:"tweet_id"`
+	Content string `json:"content" bson:"content"`
+	Parent  string `json:"parent" bson:"parent"`
+	Type    uint   `json:"type" bson:"type" comment:"评论类型 0: 点赞 1: 评论"`
 }
 
 func NewComment() Interface {

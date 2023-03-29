@@ -11,19 +11,19 @@ import (
 // 定义基本模型，对数据进行增删改查时结构可以变动
 type User struct {
 	BaseModel
-	ID            string    `bson:"_id"`
-	Username      string    `bson:"username"`
-	Password      string    `bson:"password"`
-	Nickname      string    `bson:"nickname"`
-	Mobile        string    `bson:"mobile"`
-	Role          string    `bson:"role"`
-	Avatar        string    `bson:"avatar"`
-	Introduce     string    `bson:"introduce"`
-	Email         string    `bson:"email"`
-	FansCount     int64     `bson:"fans_count" comment:"关注数"`
-	WechatCount   int64     `bson:"wechat_count" comment:"关注数"`
-	LastLoginTime time.Time `bson:"last_login_time" comment:"用户最近登陆时间"`
-	Disabled      uint      `bson:"disabled" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
+	ID            string    `json:"id" bson:"_id"`
+	Username      string    `json:"username" bson:"username"`
+	Password      string    `json:"password" bson:"password"`
+	Nickname      string    `json:"nickname" bson:"nickname"`
+	Mobile        string    `json:"mobile" bson:"mobile"`
+	Role          string    `json:"role" bson:"role"`
+	Avatar        string    `json:"avatar" bson:"avatar"`
+	Introduce     string    `json:"introduce" bson:"introduce"`
+	Email         string    `json:"email" bson:"email"`
+	FansCount     int64     `json:"fansCount" bson:"fans_count" comment:"关注数"`
+	WechatCount   int64     `json:"wechatCount" bson:"wechat_count" comment:"关注数"`
+	LastLoginTime time.Time `json:"lastLoginTime" bson:"last_login_time" comment:"用户最近登陆时间"`
+	Disabled      uint      `json:"disabled" bson:"disabled" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
 }
 
 func NewUser() Interface {

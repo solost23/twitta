@@ -9,9 +9,9 @@ import (
 
 type Favorite struct {
 	BaseModel
-	ID      string `bson:"_id"`
-	UserId  string `bson:"user_id"`
-	TweetId string `bson:"tweet_id"`
+	ID      string `json:"id" bson:"_id"`
+	UserId  string `json:"userId" bson:"user_id"`
+	TweetId string `json:"tweetId" bson:"tweet_id"`
 }
 
 func NewFavorite() Interface {

@@ -9,11 +9,11 @@ import (
 
 type LogPrivateLatter struct {
 	BaseModel
-	ID       string `bson:"_id"`
-	UserId   string `bson:"user_id"`
-	TargetId string `bson:"target_id"`
-	Content  string `bson:"content"`
-	Type     uint   `bson:"type" comment:"是否通过好友 0 接受/拒绝 1 接受 2 拒绝 3 朋友私信内容"`
+	ID       string `json:"id" bson:"_id"`
+	UserId   string `json:"userId" bson:"user_id"`
+	TargetId string `json:"targetId" bson:"target_id"`
+	Content  string `json:"content" bson:"content"`
+	Type     uint   `json:"type" bson:"type" comment:"是否通过好友 0 接受/拒绝 1 接受 2 拒绝 3 朋友私信内容"`
 }
 
 func NewLogPrivateLatter() Interface {

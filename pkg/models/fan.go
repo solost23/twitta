@@ -9,9 +9,9 @@ import (
 
 type Fan struct {
 	BaseModel
-	ID       string `bson:"_id"`
-	UserId   string `bson:"user_id"`
-	TargetId string `bson:"target_id"`
+	ID       string `json:"id" bson:"_id"`
+	UserId   string `json:"userId" bson:"user_id"`
+	TargetId string `json:"targetId" bson:"target_id"`
 }
 
 func NewFan() Interface {

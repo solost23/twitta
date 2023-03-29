@@ -39,7 +39,14 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		return err
 	}
 
-	documentJson, _ := json.Marshal(data)
+	// 推文携带创建者信息，方便后续直接搜索展示
+	type Document struct {
+		*models.Tweet
+		Username string `json:"username"`
+		Avatar   string `json:"avatar"`
+	}
+	postDocument := Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}
+	documentJson, _ := json.Marshal(postDocument)
 	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
 			Requester:   user.Username,
@@ -88,7 +95,7 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 	return nil
 }
 
-func (*Service) TweetList(c *gin.Context) ([]*forms.TweetListResponse, error) {
+func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetList, error) {
 	db := global.DB
 
 	tweets := make([]*models.Tweet, 0)
@@ -116,24 +123,27 @@ func (*Service) TweetList(c *gin.Context) ([]*forms.TweetListResponse, error) {
 		}{Username: user.Username, Avatar: user.Avatar}
 	}
 	// 封装数据返回
-	tweetListResponse := make([]*forms.TweetListResponse, 0, len(tweets))
+	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		tweetListResponse = append(tweetListResponse, &forms.TweetListResponse{
+		records = append(records, &forms.Tweet{
 			UserId:       tweet.UserID,
 			Username:     userIdToInfoMaps[tweet.UserID].Username,
 			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			TweetId:      tweet.ID,
+			ID:           tweet.ID,
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
 	}
-	return tweetListResponse, nil
+	result := &forms.TweetList{
+		Records: records,
+	}
+	return result, nil
 }
 
-func (*Service) TweetOwnList(c *gin.Context) ([]*forms.TweetListResponse, error) {
+func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 	db := global.DB
 	user := utils.GetUser(c)
 
@@ -142,24 +152,28 @@ func (*Service) TweetOwnList(c *gin.Context) ([]*forms.TweetListResponse, error)
 	if err != nil {
 		return nil, err
 	}
-	tweetOwnList := make([]*forms.TweetListResponse, 0, len(tweets))
+	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		tweetOwnList = append(tweetOwnList, &forms.TweetListResponse{
+		records = append(records, &forms.Tweet{
 			UserId:       user.ID,
 			Username:     user.Username,
 			Avatar:       user.Avatar,
-			TweetId:      tweet.ID,
+			ID:           tweet.ID,
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
 	}
-	return tweetOwnList, nil
+
+	result := &forms.TweetList{
+		Records: records,
+	}
+	return result, nil
 }
 
-func (*Service) TweetFavoriteList(c *gin.Context) ([]*forms.TweetListResponse, error) {
+func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	db := global.DB
 	user := utils.GetUser(c)
 
@@ -197,21 +211,25 @@ func (*Service) TweetFavoriteList(c *gin.Context) ([]*forms.TweetListResponse, e
 		}{Username: user.Username, Avatar: user.Avatar}
 	}
 	// 封装数据返回
-	tweetFavoriteResponse := make([]*forms.TweetListResponse, 0, len(tweets))
+	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		tweetFavoriteResponse = append(tweetFavoriteResponse, &forms.TweetListResponse{
+		records = append(records, &forms.Tweet{
 			UserId:       tweet.UserID,
 			Username:     userIdToInfoMaps[tweet.UserID].Username,
 			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			TweetId:      tweet.ID,
+			ID:           tweet.ID,
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			TweetTime:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
 	}
-	return tweetFavoriteResponse, nil
+
+	result := &forms.TweetList{
+		Records: records,
+	}
+	return result, nil
 }
 
 func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) error {
@@ -254,68 +272,42 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 	return nil
 }
 
-func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) ([]*forms.TweetListResponse, error) {
-	//db := global.DB
+func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) (*forms.TweetList, error) {
 
-	// 全局搜索出推文内容
-	//from := int32((params.Page - 1) * params.Size)
-	//size := from + int32(params.Size) - 1
-	//searchResults, _, err := NewZinc().SearchDocument(c, constants.ZINCINDEXTWEET, params.Keyword, from, size)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//tweetIds := make([]string, 0, len(searchResults))
-	//for _, searchResult := range searchResults {
-	//	tweetIds = append(tweetIds, *searchResult.Id)
-	//}
-	//tweets := make([]*models.Tweet, 0, len(searchResults))
-	//err = models.NewTweet().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": tweetIds}}, &tweets)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//tweetIdToThumbCommentNumMaps := make(map[string]struct {
-	//	ThumbCount   int64
-	//	CommentCount int64
-	//}, len(tweets))
-	//for _, tweet := range tweets {
-	//	tweetIdToThumbCommentNumMaps[tweet.ID] = struct {
-	//		ThumbCount   int64
-	//		CommentCount int64
-	//	}{ThumbCount: tweet.ThumbCount, CommentCount: tweet.CommentCount}
-	//}
-	//userIds := make([]string, 0, len(searchResults))
-	//for _, searchResult := range searchResults {
-	//	userIds = append(userIds, searchResult.Source["user_id"].(string))
-	//}
-	//users := make([]*models.User, 0)
-	//err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//userIdToInfoMaps := make(map[string]struct {
-	//	Username string
-	//	Avatar   string
-	//})
-	//for _, user := range users {
-	//	userIdToInfoMaps[user.ID] = struct {
-	//		Username string
-	//		Avatar   string
-	//	}{Username: user.Username, Avatar: user.Avatar}
-	//}
-	//// 封装数据
-	//tweetSearchResponse := make([]*forms.TweetListResponse, 0, len(searchResults))
-	//for _, searchResult := range searchResults {
-	//	tweetSearchResponse = append(tweetSearchResponse, &forms.TweetListResponse{
-	//		UserId:       searchResult.Source["user_id"].(string),
-	//		Username:     userIdToInfoMaps[searchResult.Source["user_id"].(string)].Username,
-	//		Avatar:       userIdToInfoMaps[searchResult.Source["user_id"].(string)].Avatar,
-	//		TweetId:      *searchResult.Id,
-	//		Title:        searchResult.Source["title"].(string),
-	//		Content:      searchResult.Source["content"].(string),
-	//		TweetTime:    searchResult.Source["basemodel"].(map[string]interface{})["created-at"].(string),
-	//		ThumbCount:   tweetIdToThumbCommentNumMaps[*searchResult.Id].ThumbCount,
-	//		CommentCount: tweetIdToThumbCommentNumMaps[*searchResult.Id].CommentCount,
-	//	})
-	//}
-	return nil, nil
+	searchResult, err := global.ESSrvClient.Search(c, &es_service.SearchRequest{
+		Header: &common.RequestHeader{
+			Requester:   "search_tweet",
+			OperatorUid: -1,
+		},
+		ShouldQuery: &es_service.Query{
+			MultiMatchQueries: []*es_service.MultiMatchQuery{
+				{Field: []string{"title", "content"}, Value: params.Keyword},
+			},
+		},
+		Indices: []string{constants.ESCINDEXTWEET},
+		Page:    int32(params.Page),
+		Size:    int32(params.Size),
+		Pretty:  true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	records := make([]*forms.Tweet, 0, len(searchResult.Records))
+	for _, search := range searchResult.Records {
+		record := &forms.Tweet{}
+		_ = json.Unmarshal([]byte(search), record)
+		records = append(records, record)
+	}
+
+	result := &forms.TweetList{
+		Records: records,
+		PageList: utils.PageList{
+			Size:    int(searchResult.PageList.GetSize()),
+			Pages:   searchResult.PageList.GetPages(),
+			Total:   searchResult.PageList.GetTotal(),
+			Current: int(searchResult.PageList.GetCurrent()),
+		},
+	}
+	return result, nil
 }

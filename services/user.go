@@ -309,8 +309,8 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.Use
 			OperatorUid: -1,
 		},
 		ShouldQuery: &es_service.Query{
-			MatchQueries: []*es_service.MatchQuery{
-				{Field: "Username", Value: params.Keyword},
+			MultiMatchQueries: []*es_service.MultiMatchQuery{
+				{Field: []string{"username", "nickname", "mobile", "role", "introduce", "email"}, Value: params.Keyword},
 			},
 		},
 		Indices: []string{constants.ESCINDEXUSER},

@@ -2,16 +2,16 @@ package models
 
 import (
 	"context"
-	
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Friend struct {
 	BaseModel
-	ID       string `bson:"_id"`
-	UserId   string `bson:"user_id"`
-	FriendId string `bson:"friend_id"`
+	ID       string `json:"id" bson:"_id"`
+	UserId   string `json:"userId" bson:"user_id"`
+	FriendId string `json:"friendId" bson:"friend_id"`
 }
 
 func NewFriend() Interface {
