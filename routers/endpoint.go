@@ -9,7 +9,7 @@ import (
 )
 
 func SetRouters(r *gin.Engine) {
-	group := r.Group("api")
+	group := r.Group("api/twitta")
 	initNoAuthRouter(group)
 	group.Use(
 		middlewares.JWTAuth(),
