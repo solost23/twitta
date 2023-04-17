@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/solost23/protopb/gen/go/protos/common"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
-	"github.com/solost23/protopb/gen/go/protos/push"
 	"go.uber.org/zap"
 	"mime/multipart"
 	"time"
@@ -77,27 +76,27 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 	}
 
 	// 调用邮件发送服务发送邮件
-	if len(params.Email) >= 0 {
-		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
-			Header: &common.RequestHeader{
-				TraceId:     6678677,
-				OperatorUid: 55,
-			},
-			Email: &push.Email{
-				Topic:       "register",
-				Name:        params.Username,
-				Addr:        params.Email,
-				ContentType: "text/plain",
-				Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
-			},
-		})
-		if err != nil {
-			zap.S().Errorf(err.Error())
-		}
-		if reply.ErrorInfo.GetCode() != 0 {
-			return errors.New(reply.ErrorInfo.GetMsg())
-		}
-	}
+	//if len(params.Email) >= 0 {
+	//	reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+	//		Header: &common.RequestHeader{
+	//			TraceId:     6678677,
+	//			OperatorUid: 55,
+	//		},
+	//		Email: &push.Email{
+	//			Topic:       "register",
+	//			Name:        params.Username,
+	//			Addr:        params.Email,
+	//			ContentType: "text/plain",
+	//			Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+	//		},
+	//	})
+	//	if err != nil {
+	//		zap.S().Errorf(err.Error())
+	//	}
+	//	if reply.ErrorInfo.GetCode() != 0 {
+	//		return errors.New(reply.ErrorInfo.GetMsg())
+	//	}
+	//}
 	return nil
 }
 
@@ -278,10 +277,9 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 }
 
 func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
-	db := global.DB
+	collection := models.GetCollection(global.DB, constants.Mongo, (&models.User{}).TableName())
 
-	user := &models.User{}
-	err := models.NewUser().FindOne(c, db, constants.Mongo, bson.M{"_id": id}, &user)
+	user, err := models.GWhereFirst[models.User](c, collection, bson.M{"_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}

@@ -10,28 +10,41 @@ import (
 	"twitta/pkg/utils"
 )
 
-func (*Service) ChatList(c *gin.Context, id string) ([]*forms.ChatListResponse, error) {
-	db := global.DB
+func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*forms.ChatList, error) {
+	collection := models.GetCollection(global.DB, constants.Mongo, (&models.LogPrivateLatter{}).TableName())
 	user := utils.GetUser(c)
 
 	// 直接查询所有记录，并返回
-	logPrivateLatters := make([]*models.LogPrivateLatter, 0)
-	find := bson.M{
+	filter := bson.M{
 		"type":      3,
 		"user_id":   bson.M{"$in": []string{user.ID, id}},
 		"target_id": bson.M{"$in": []string{user.ID, id}},
 	}
-	err := models.NewLogPrivateLatter().Find(c, db, constants.Mongo, find, &logPrivateLatters)
+	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, collection, &models.ListPageInput{
+		Page: params.Page,
+		Size: params.Size,
+	}, "", filter)
 	if err != nil {
 		return nil, err
 	}
-	chatListResponse := make([]*forms.ChatListResponse, 0, len(logPrivateLatters))
-	for _, logPrivateLatter := range logPrivateLatters {
-		chatListResponse = append(chatListResponse, &forms.ChatListResponse{
-			UserId:    logPrivateLatter.UserId,
-			Msg:       logPrivateLatter.Content,
-			CreatedAt: logPrivateLatter.CreatedAt.Format(constants.TimeFormat),
+
+	records := make([]*forms.Chat, 0, len(logPrivateLatters))
+	for i := 0; i < cap(records); i++ {
+		createdAt := logPrivateLatters[i].CreatedAt.Format(constants.TimeFormat)
+		records = append(records, &forms.Chat{
+			UserId:    &logPrivateLatters[i].UserId,
+			Msg:       &logPrivateLatters[i].Content,
+			CreatedAt: &createdAt,
 		})
 	}
-	return chatListResponse, nil
+	result := &forms.ChatList{
+		Records: records,
+		PageList: &utils.PageList{
+			Size:    params.Size,
+			Pages:   pages,
+			Total:   total,
+			Current: params.Page,
+		},
+	}
+	return result, nil
 }

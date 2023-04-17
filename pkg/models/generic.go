@@ -4,64 +4,101 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math"
 )
 
-// 丢弃interface设计，使用一份代码操作所有表
-func GInsertOne(ctx context.Context, db *mongo.Client, dbName string, collection string, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	result, err := db.Database(dbName).Collection(collection).InsertOne(ctx, document, opts...)
+// return collection, 丢弃interface设计，使用一份代码操作所有表
+func GetCollection(db *mongo.Client, name string, collection string) *mongo.Collection {
+	return db.Database(name).Collection(collection)
+}
+
+func GInsertOne[T any](ctx context.Context, collection *mongo.Collection, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+	result, err := collection.InsertOne(ctx, document, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func GInsertMany(ctx context.Context, db *mongo.Client, dbName string, collection string, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
-	result, err := db.Database(dbName).Collection(collection).InsertMany(ctx, documents, opts...)
+func GInsertMany[T any](ctx context.Context, collection *mongo.Collection, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
+	result, err := collection.InsertMany(ctx, documents, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func GFindOne(ctx context.Context, db *mongo.Client, dbName string, collection string, filter interface{}, result interface{}, opts ...*options.FindOneOptions) error {
-	err := db.Database(dbName).Collection(collection).FindOne(ctx, filter, opts...).Decode(result)
+func GWhereFirst[T any](ctx context.Context, collection *mongo.Collection, filter interface{}, opts ...*options.FindOneOptions) (*T, error) {
+	var result T
+	err := collection.FindOne(ctx, filter, opts...).Decode(&result)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &result, nil
 }
 
-func GFind(ctx context.Context, db *mongo.Client, dbName string, collection string, filter interface{}, results interface{}, opts ...*options.FindOptions) error {
-	cur, err := db.Database(dbName).Collection(collection).Find(ctx, filter, opts...)
+func GWhereFind[T any](ctx context.Context, collection *mongo.Collection, filter interface{}, opts ...*options.FindOptions) ([]*T, error) {
+	var result []*T
+	cur, err := collection.Find(ctx, filter, opts...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err = cur.All(ctx, results); err != nil {
-		return err
+	if err = cur.All(ctx, &result); err != nil {
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
-func GUpdate(ctx context.Context, db *mongo.Client, dbName string, collection string, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	updateResult, err := db.Database(dbName).Collection(collection).UpdateMany(ctx, filter, update, opts...)
+func GWhereUpdate[T any](ctx context.Context, collection *mongo.Collection, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	updateResult, err := collection.UpdateMany(ctx, filter, update, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return updateResult, nil
 }
 
-func GDelete(ctx context.Context, db *mongo.Client, dbName string, collection string, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	deleteResult, err := db.Database(dbName).Collection(collection).DeleteMany(ctx, filter, opts...)
+func GWhereDelete[T any](ctx context.Context, collection *mongo.Collection, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	deleteResult, err := collection.DeleteMany(ctx, filter, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return deleteResult, nil
 }
 
-func GCount(ctx context.Context, db *mongo.Client, dbName string, collection string, filter interface{}, opts ...*options.CountOptions) (int64, error) {
-	count, err := db.Database(dbName).Collection(collection).CountDocuments(ctx, filter, opts...)
+func GWhereCount[T any](ctx context.Context, collection *mongo.Collection, filter interface{}, opts ...*options.CountOptions) (int64, error) {
+	count, err := collection.CountDocuments(ctx, filter, opts...)
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
+}
+
+func GPaginatorOrder[T any](ctx context.Context, collection *mongo.Collection, params *ListPageInput, sort string, filter interface{}) ([]*T, int64, int64, error) {
+	var result []*T
+
+	findOptions := new(options.FindOptions)
+	if params != nil && params.Size > 0 && params.Page > 0 {
+		findOptions.SetSkip(int64((params.Page - 1) * params.Size))
+		findOptions.SetLimit(int64(params.Size))
+	}
+
+	if sort != "" {
+		findOptions.SetSort(sort)
+	}
+
+	cur, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	if err = cur.All(ctx, &result); err != nil {
+		return nil, 0, 0, err
+	}
+
+	count, err := collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	pages := int64(math.Ceil(float64(count) / float64(params.Size)))
+	return result, count, pages, nil
 }

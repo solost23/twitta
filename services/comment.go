@@ -14,63 +14,74 @@ import (
 	"twitta/pkg/utils"
 )
 
-func (*Service) CommentList(c *gin.Context, id string) ([]*forms.CommentListResponse, error) {
-	db := global.DB
+func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInsertForm) (*forms.CommentList, error) {
+	collectionComment := models.GetCollection(global.DB, constants.Mongo, (&models.Comment{}).TableName())
+	collectionUser := models.GetCollection(global.DB, constants.Mongo, (&models.User{}).TableName())
 
-	comments := make([]*models.Comment, 0)
-	err := models.NewComment().Find(c, db, constants.Mongo, bson.M{"tweet_id": id, "type": 1}, &comments)
-	if err != nil {
-		return nil, err
-	}
-	// 待优化排序-这里直接返回全部数据
+	comments, total, pages, err := models.GPaginatorOrder[models.Comment](c, collectionComment, &models.ListPageInput{
+		Page: params.Page,
+		Size: params.Size,
+	}, "created_at ASC", bson.M{"tweet_id": id, "type": 1})
 	userIds := make([]string, 0, len(comments))
-	for _, comment := range comments {
-		userIds = append(userIds, comment.UserId)
+	for i := 0; i < cap(userIds); i++ {
+		userIds = append(userIds, comments[i].UserId)
 	}
-	users := make([]*models.User, 0)
-	err = models.NewUser().Find(c, db, constants.Mongo, bson.M{"_id": bson.M{"$in": userIds}}, &users)
+
+	users, err := models.GWhereFind[models.User](c, collectionUser, bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
+
 	userIdToInfoMaps := make(map[string]struct {
-		Username  string
-		Avatar    string
-		Introduce string
+		Username  *string
+		Avatar    *string
+		Introduce *string
 	}, len(users))
-	for _, user := range users {
-		userIdToInfoMaps[user.ID] = struct {
-			Username  string
-			Avatar    string
-			Introduce string
-		}{Username: user.Username, Avatar: user.Avatar, Introduce: user.Introduce}
+	for i := 0; i < len(users); i++ {
+		userIdToInfoMaps[users[i].ID] = struct {
+			Username  *string
+			Avatar    *string
+			Introduce *string
+		}{Username: &users[i].Username, Avatar: &users[i].Avatar, Introduce: &users[i].Introduce}
 	}
-	commentListResponse := make([]*forms.CommentListResponse, 0, len(comments))
-	for _, comment := range comments {
-		commentListResponse = append(commentListResponse, &forms.CommentListResponse{
-			UserId:    comment.UserId,
-			PID:       comment.Parent,
-			Username:  userIdToInfoMaps[comment.UserId].Username,
-			Avatar:    userIdToInfoMaps[comment.UserId].Avatar,
-			Introduce: userIdToInfoMaps[comment.UserId].Introduce,
-			Id:        comment.ID,
-			Content:   comment.Content,
+
+	records := make([]*forms.Comment, 0, len(comments))
+	for i := 0; i < cap(records); i++ {
+		records = append(records, &forms.Comment{
+			UserId:    &comments[i].UserId,
+			PID:       &comments[i].Parent,
+			Username:  userIdToInfoMaps[comments[i].UserId].Username,
+			Avatar:    userIdToInfoMaps[comments[i].UserId].Avatar,
+			Introduce: userIdToInfoMaps[comments[i].UserId].Introduce,
+			Id:        &comments[i].ID,
+			Content:   &comments[i].Content,
 			Children:  nil,
 		})
 	}
 
-	result := make([]*forms.CommentListResponse, 0)
-	arrNode := make([]utils.TreeNode, len(commentListResponse))
-	for i := 0; i < len(commentListResponse); i++ {
-		arrNode[i] = commentListResponse[i]
+	nodeRecords := make([]*forms.Comment, 0)
+	arrNode := make([]utils.TreeNode, 0, len(comments))
+	for i := 0; i < cap(arrNode); i++ {
+		arrNode[i] = records[i]
 	}
 	rootNodes := utils.BuildTrees(arrNode)
 	rootNodesByte, err := json.Marshal(rootNodes)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(rootNodesByte, &result)
+	err = json.Unmarshal(rootNodesByte, &nodeRecords)
 	if err != nil {
 		return nil, err
+	}
+
+	result := &forms.CommentList{
+		Record: nodeRecords,
+		PageList: &utils.PageList{
+			Size:    params.Size,
+			Pages:   pages,
+			Total:   total,
+			Current: params.Page,
+		},
 	}
 	return result, nil
 }
@@ -146,8 +157,8 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 		ID:      utils.UUID(),
 		UserId:  user.ID,
 		TweetId: id,
-		Content: params.Content,
-		Parent:  params.ParentId,
+		Content: *params.Content,
+		Parent:  *params.ParentId,
 		Type:    1,
 	}
 	_, err := models.NewComment().InsertOne(c, db, constants.Mongo, &data)
