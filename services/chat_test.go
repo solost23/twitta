@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/http"
 	"testing"
 	"twitta/forms"
+	"twitta/pkg/utils"
 )
 
 func TestService_ChatList(t *testing.T) {
@@ -15,7 +16,7 @@ func TestService_ChatList(t *testing.T) {
 		id     string
 	}
 	type want struct {
-		results []*forms.ChatListResponse
+		results *forms.ChatList
 		err     error
 	}
 	tests := []struct {
@@ -43,7 +44,7 @@ func TestService_ChatList(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		results, err := (&Service{}).ChatList(test.arg.ginCtx, test.arg.id)
+		results, err := (&Service{}).ChatList(test.arg.ginCtx, test.arg.id, &utils.PageForm{Page: 1, Size: 10})
 		if err != test.want.err {
 			t.Errorf("error: %+v \n", err)
 		}

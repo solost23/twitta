@@ -5,11 +5,36 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math"
+	"twitta/global"
+	"twitta/pkg/constants"
 )
 
 // return collection, 丢弃interface设计，使用一份代码操作所有表
-func GetCollection(db *mongo.Client, name string, collection string) *mongo.Collection {
-	return db.Database(name).Collection(collection)
+type db struct {
+	Conn *mongo.Client
+	Name *string
+}
+
+func NewDB() *db {
+	name := constants.Mongo
+	return &db{
+		Conn: global.DB,
+		Name: &name,
+	}
+}
+
+func (builder *db) WithConn(conn *mongo.Client) *db {
+	builder.Conn = conn
+	return builder
+}
+
+func (builder *db) WithName(name string) *db {
+	builder.Name = &name
+	return builder
+}
+
+func (builder *db) GetCollection(collection string) *mongo.Collection {
+	return builder.Conn.Database(*builder.Name).Collection(collection)
 }
 
 func GInsertOne[T any](ctx context.Context, collection *mongo.Collection, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {

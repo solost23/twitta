@@ -2,7 +2,7 @@ version: "1.0.1"
 debug_mode: "debug"
 addr: ":6565"
 time_location: "Asia/Shanghai"
-prometheus_enable: false
+prometheus_enable: true
 config_path: api/twitta
 
 mongo:

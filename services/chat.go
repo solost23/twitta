@@ -4,14 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"twitta/forms"
-	"twitta/global"
 	"twitta/pkg/constants"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
 )
 
 func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*forms.ChatList, error) {
-	collection := models.GetCollection(global.DB, constants.Mongo, (&models.LogPrivateLatter{}).TableName())
 	user := utils.GetUser(c)
 
 	// 直接查询所有记录，并返回
@@ -20,7 +18,7 @@ func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*fo
 		"user_id":   bson.M{"$in": []string{user.ID, id}},
 		"target_id": bson.M{"$in": []string{user.ID, id}},
 	}
-	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, collection, &models.ListPageInput{
+	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, models.NewDB().GetCollection(models.NewLogPrivateLatter().TableName()), &models.ListPageInput{
 		Page: params.Page,
 		Size: params.Size,
 	}, "", filter)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/solost23/protopb/gen/go/protos/common"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
+	push "github.com/solost23/protopb/gen/go/protos/push"
 	"go.uber.org/zap"
 	"mime/multipart"
 	"time"
@@ -27,10 +28,9 @@ import (
 )
 
 func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
-	db := global.DB
+	db := models.NewDB()
 
-	user := models.NewUser()
-	err := user.FindOne(c, db, constants.Mongo, bson.M{"username": params.Username}, user)
+	_, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -54,7 +54,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		FansCount: 0,
 		Disabled:  0,
 	}
-	_, err = user.InsertOne(c, db, constants.Mongo, data)
+	_, err = models.GInsertOne[models.User](c, db.GetCollection(models.NewUser().TableName()), data)
 	if err != nil {
 		return err
 	}
@@ -75,28 +75,28 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		zap.S().Error(err.Error())
 	}
 
-	// 调用邮件发送服务发送邮件
-	//if len(params.Email) >= 0 {
-	//	reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
-	//		Header: &common.RequestHeader{
-	//			TraceId:     6678677,
-	//			OperatorUid: 55,
-	//		},
-	//		Email: &push.Email{
-	//			Topic:       "register",
-	//			Name:        params.Username,
-	//			Addr:        params.Email,
-	//			ContentType: "text/plain",
-	//			Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
-	//		},
-	//	})
-	//	if err != nil {
-	//		zap.S().Errorf(err.Error())
-	//	}
-	//	if reply.ErrorInfo.GetCode() != 0 {
-	//		return errors.New(reply.ErrorInfo.GetMsg())
-	//	}
-	//}
+	//调用邮件发送服务发送邮件
+	if len(params.Email) >= 0 {
+		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+			Header: &common.RequestHeader{
+				TraceId:     6678677,
+				OperatorUid: 55,
+			},
+			Email: &push.Email{
+				Topic:       "register",
+				Name:        params.Username,
+				Addr:        params.Email,
+				ContentType: "text/plain",
+				Content:     fmt.Sprintf("恭喜%s注册Twitta成功", params.Username),
+			},
+		})
+		if err != nil {
+			zap.S().Errorf(err.Error())
+		}
+		if reply.ErrorInfo.GetCode() != 0 {
+			return errors.New(reply.ErrorInfo.GetMsg())
+		}
+	}
 	return nil
 }
 
@@ -114,10 +114,9 @@ func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (stri
 }
 
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
-	db := global.DB
+	db := models.NewDB()
 
-	user := &models.User{}
-	err := user.FindOne(c, db, constants.Mongo, bson.M{"username": params.Username}, user)
+	user, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
@@ -165,7 +164,7 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 	rdb.Set(c, key, token, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 	rdb.Set(c, constants.RedisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 
-	_, err = user.Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
+	_, err = models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
 	if err != nil {
 		return nil, err
 	}
@@ -177,24 +176,24 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 	}
 
 	// 调用邮件发送服务发送邮件
-	//if len(user.Email) >= 0 {
-	//	_, err = global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
-	//		Header: &common.RequestHeader{
-	//			TraceId:     6678678,
-	//			OperatorUid: 56,
-	//		},
-	//		Email: &push.Email{
-	//			Topic:       "login",
-	//			Name:        user.Username,
-	//			Addr:        user.Email,
-	//			ContentType: "text/plain",
-	//			Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
-	//		},
-	//	})
-	//	if err != nil {
-	//		zap.S().Errorf(err.Error())
-	//	}
-	//}
+	if len(user.Email) >= 0 {
+		_, err = global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+			Header: &common.RequestHeader{
+				TraceId:     6678678,
+				OperatorUid: 56,
+			},
+			Email: &push.Email{
+				Topic:       "login",
+				Name:        user.Username,
+				Addr:        user.Email,
+				ContentType: "text/plain",
+				Content:     fmt.Sprintf("恭喜%s登陆Twitta成功", user.Username),
+			},
+		})
+		if err != nil {
+			zap.S().Errorf(err.Error())
+		}
+	}
 
 	return response, err
 }
@@ -222,7 +221,7 @@ func (s *Service) Logout(c *gin.Context, params *forms.LogoutForm) error {
 }
 
 func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
-	db := global.DB
+	db := models.NewDB()
 	user := utils.GetUser(c)
 
 	update := bson.M{
@@ -233,13 +232,12 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 			"introduce": params.Introduce,
 		},
 	}
-	_, err := models.NewUser().Update(c, db, constants.Mongo, bson.M{"_id": user.ID}, update)
+	_, err := models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, update)
 	if err != nil {
 		return err
 	}
 
-	data := &models.User{}
-	err = models.NewUser().FindOne(c, db, constants.Mongo, bson.M{"_id": user.ID}, &data)
+	user, err = models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID})
 	if err != nil {
 		return err
 	}
@@ -248,25 +246,25 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 	// 删除 + 插入 = 更新
 	_, err = global.ESSrvClient.Delete(c, &es_service.DeleteRequest{
 		Header: &common.RequestHeader{
-			Requester:   data.Username,
+			Requester:   user.Username,
 			OperatorUid: -1,
 			TraceId:     -1,
 		},
 		Index:      constants.ESCINDEXUSER,
-		DocumentId: data.ID,
+		DocumentId: user.ID,
 	})
 	if err != nil {
 		zap.S().Errorf(err.Error())
 	}
-	documentJson, _ := json.Marshal(data)
+	documentJson, _ := json.Marshal(user)
 	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
-			Requester:   data.Username,
+			Requester:   user.Username,
 			OperatorUid: -1,
 			TraceId:     -1,
 		},
 		Index:      constants.ESCINDEXUSER,
-		DocumentId: data.ID,
+		DocumentId: user.ID,
 		Document:   string(documentJson),
 	})
 	if err != nil {
@@ -277,9 +275,9 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 }
 
 func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
-	collection := models.GetCollection(global.DB, constants.Mongo, (&models.User{}).TableName())
+	db := models.NewDB()
 
-	user, err := models.GWhereFirst[models.User](c, collection, bson.M{"_id": id})
+	user, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
