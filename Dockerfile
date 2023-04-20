@@ -7,7 +7,7 @@ ENV GO111MODULE=on \
 
 WORKDIR /build
 COPY . .
-RUN go build -o app ./cmd/twitta/main.go
+RUN go build -o app ./cmd/main.go
 # 下载时区文件
 RUN apk add tzdata
 
@@ -15,7 +15,8 @@ RUN apk add tzdata
 FROM scratch
 
 COPY --from=builder /build/app /
-#COPY --from=builder /build/configs /
+COPY --from=builder /build/configs /
+COPY --from=builder /build/certs /etc/ssl/certs/
 
 # 拷贝时区文件
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
