@@ -3,14 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"twitta/global"
 	"twitta/global/initialize"
 	"twitta/routers"
@@ -28,11 +28,9 @@ import (
 // @schemes http https
 
 var (
-	WebConfigPath = "configs/config.yml"
-	WebLogPath    = "logs"
-	version       = "__BUILD_VERSION_"
-	execDir       string
-	st, v, V      bool
+	version  = "__BUILD_VERSION_"
+	execDir  string
+	st, v, V bool
 )
 
 func main() {
@@ -46,7 +44,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	initialize.Initialize(path.Join(execDir, WebConfigPath))
+	initialize.Initialize(execDir)
 	// HTTP init
 	app := gin.New()
 	routers.Setup(app)
