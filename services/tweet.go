@@ -3,14 +3,15 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/solost23/protopb/gen/go/protos/common"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
-	"time"
 	"twitta/forms"
-	"twitta/global"
 	"twitta/pkg/constants"
+	"twitta/pkg/domain"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
 
@@ -47,7 +48,7 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 	}
 	postDocument := Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}
 	documentJson, _ := json.Marshal(postDocument)
-	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+	_, err = domain.NewESClient().Create(c, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
 			Requester:   user.Username,
 			OperatorUid: -1,
@@ -79,7 +80,7 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 		return err
 	}
 
-	_, err = global.ESSrvClient.Delete(c, &es_service.DeleteRequest{
+	_, err = domain.NewESClient().Delete(c, &es_service.DeleteRequest{
 		Header: &common.RequestHeader{
 			Requester:   user.Username,
 			OperatorUid: -1,
@@ -266,7 +267,7 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 
 func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) (*forms.TweetList, error) {
 
-	searchResult, err := global.ESSrvClient.Search(c, &es_service.SearchRequest{
+	searchResult, err := domain.NewESClient().Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
 			Requester:   "search_tweet",
 			OperatorUid: -1,

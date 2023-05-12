@@ -3,17 +3,18 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/gabriel-vasile/mimetype"
-	"github.com/solost23/protopb/gen/go/protos/common"
-	"github.com/solost23/protopb/gen/go/protos/oss"
 	"io/ioutil"
 	"mime/multipart"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-	"twitta/global"
+
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/solost23/protopb/gen/go/protos/common"
+	"github.com/solost23/protopb/gen/go/protos/oss"
 	"twitta/pkg/constants"
+	"twitta/pkg/domain"
 	"twitta/pkg/utils"
 )
 
@@ -73,7 +74,7 @@ func uploadImgOrVidBytes(userId uint, folderName string, postFileName string, fi
 
 func upload(userId uint, folder, filename string, fileBytes []byte) (url string, err error) {
 
-	client := global.OSSSrvClient
+	client := domain.NewOSSClient()
 	uploadResponse, err := client.Upload(context.Background(), &oss.UploadRequest{
 		Header: &common.RequestHeader{
 			Requester: strconv.Itoa(int(userId)),

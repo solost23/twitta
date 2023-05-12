@@ -17,10 +17,4 @@ func Initialize(execDir string) {
 	InitLoc()
 	// 初始化 Mongo
 	InitMongo()
-	// 初始化push grpc
-	InitPushClient()
-	// 初始化oss grpc
-	InitOSSClient()
-	// 初始化es grpc
-	InitESClient()
 }

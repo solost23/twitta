@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"time"
+
 	"github.com/solost23/protopb/gen/go/protos/common"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	push "github.com/solost23/protopb/gen/go/protos/push"
 	"go.uber.org/zap"
-	"mime/multipart"
-	"time"
 	"twitta/forms"
 	"twitta/global"
 	"twitta/pkg/cache"
 	"twitta/pkg/constants"
+	"twitta/pkg/domain"
 	"twitta/pkg/middlewares"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
@@ -61,7 +63,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 
 	// 将用户数据存入es
 	documentJson, _ := json.Marshal(data)
-	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+	_, err = domain.NewESClient().Create(c, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
 			Requester:   data.Username,
 			OperatorUid: -1,
@@ -75,9 +77,9 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		zap.S().Error(err.Error())
 	}
 
-	//调用邮件发送服务发送邮件
+	// 调用邮件发送服务发送邮件
 	if len(params.Email) >= 0 {
-		reply, err := global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+		reply, err := domain.NewPushClient().SendEmail(c, &push.SendEmailRequest{
 			Header: &common.RequestHeader{
 				TraceId:     6678677,
 				OperatorUid: 55,
@@ -177,7 +179,7 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 
 	// 调用邮件发送服务发送邮件
 	if len(user.Email) >= 0 {
-		_, err = global.PushSrvClient.SendEmail(c, &push.SendEmailRequest{
+		_, err = domain.NewPushClient().SendEmail(c, &push.SendEmailRequest{
 			Header: &common.RequestHeader{
 				TraceId:     6678678,
 				OperatorUid: 56,
@@ -244,7 +246,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 
 	// 拿到id 更新es数据
 	// 删除 + 插入 = 更新
-	_, err = global.ESSrvClient.Delete(c, &es_service.DeleteRequest{
+	_, err = domain.NewESClient().Delete(c, &es_service.DeleteRequest{
 		Header: &common.RequestHeader{
 			Requester:   user.Username,
 			OperatorUid: -1,
@@ -257,7 +259,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		zap.S().Errorf(err.Error())
 	}
 	documentJson, _ := json.Marshal(user)
-	_, err = global.ESSrvClient.Create(c, &es_service.CreateRequest{
+	_, err = domain.NewESClient().Create(c, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
 			Requester:   user.Username,
 			OperatorUid: -1,
@@ -299,7 +301,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error)
 
 func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.UserSearch, error) {
 
-	searchResult, err := global.ESSrvClient.Search(c, &es_service.SearchRequest{
+	searchResult, err := domain.NewESClient().Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
 			Requester:   "search_user",
 			OperatorUid: -1,
