@@ -1,20 +1,21 @@
 package configs
 
 type ServerConfig struct {
-	Version          string        `mapstructure:"version"`
-	DebugMode        string        `mapstructure:"debug_mode"`
-	TimeLocation     string        `mapstructure:"time_location"`
-	Addr             string        `mapstructure:"addr"`
-	PrometheusEnable bool          `mapstructure:"prometheus_enable"`
-	ConfigPath       string        `mapstructure:"config_path"`
-	MongoConfig      MongoConf     `mapstructure:"mongo"`
-	RedisConfig      RedisConf     `mapstructure:"redis"`
-	JWTConfig        JWTConf       `mapstructure:"jwt"`
-	ConsulConfig     ConsulConf    `mapstructure:"consul"`
-	StaticOSS        StaticOSSConf `mapstructure:"static-oss"`
-	PushSrvConfig    PushSrvConf   `mapstructure:"push"`
-	OSSSrvConfig     OSSSrvConf    `mapstructure:"oss"`
-	ESSrvConfig      ESSrvConf     `mapstructure:"es"`
+	Version               string              `mapstructure:"version"`
+	DebugMode             string              `mapstructure:"debug_mode"`
+	TimeLocation          string              `mapstructure:"time_location"`
+	Addr                  string              `mapstructure:"addr"`
+	PrometheusEnable      bool                `mapstructure:"prometheus_enable"`
+	ConfigPath            string              `mapstructure:"config_path"`
+	MongoConfig           MongoConf           `mapstructure:"mongo"`
+	RedisConfig           RedisConf           `mapstructure:"redis"`
+	JWTConfig             JWTConf             `mapstructure:"jwt"`
+	ConsulConfig          ConsulConf          `mapstructure:"consul"`
+	StaticOSS             StaticOSSConf       `mapstructure:"static-oss"`
+	PushSrvConfig         PushSrvConf         `mapstructure:"push"`
+	OSSSrvConfig          OSSSrvConf          `mapstructure:"oss"`
+	ESSrvConfig           ESSrvConf           `mapstructure:"es"`
+	FaceRecognitionConfig FaceRecognitionConf `mapstructure:"face_recognition"`
 }
 
 type MongoConf struct {
@@ -52,5 +53,9 @@ type OSSSrvConf struct {
 }
 
 type ESSrvConf struct {
+	Name string `mapstructure:"name"`
+}
+
+type FaceRecognitionConf struct {
 	Name string `mapstructure:"name"`
 }

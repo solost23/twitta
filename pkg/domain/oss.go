@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
+	_ "github.com/mbobakov/grpc-consul-resolver"
 	"github.com/solost23/protopb/gen/go/protos/oss"
 	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/credentials/insecure"
 	"twitta/global"
 )

@@ -60,6 +60,20 @@ func login(c *gin.Context) {
 	response.Success(c, result)
 }
 
+func face(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	result, err := services.NewService().Face(c, file)
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.Success(c, result)
+}
+
 func logout(c *gin.Context) {
 	params := &forms.LogoutForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {

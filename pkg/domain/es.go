@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
+	_ "github.com/mbobakov/grpc-consul-resolver"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

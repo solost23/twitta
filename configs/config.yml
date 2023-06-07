@@ -47,3 +47,6 @@ oss:
 
 es:
   name: "es_service"
+
+face_recognition:
+  name: "face_recognition_service"

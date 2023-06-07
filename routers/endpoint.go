@@ -13,7 +13,7 @@ func SetRouters(r *gin.Engine) {
 	initNoAuthRouter(group)
 	group.Use(
 		middlewares.JWTAuth(),
-		//middlewares.AuthCheckRole(),
+		// middlewares.AuthCheckRole(),
 	)
 
 	initAuthRouter(group)
@@ -23,6 +23,8 @@ func initNoAuthRouter(group *gin.RouterGroup) {
 	group.POST("register", register)
 	group.POST("register/avatar", uploadAvatar)
 	group.POST("login", login)
+	// 验证用户脸部
+	group.POST("face", face)
 
 	// 展示所有推文
 	group.GET("tweet", tweetList)

@@ -13,6 +13,7 @@ type RegisterForm struct {
 	Email     string `json:"email" binding:"required"`
 	Avatar    string `json:"avatar"`
 	Introduce string `json:"introduce"`
+	FaceImg   string `json:"faceImg"`
 }
 
 type LoginForm struct {
@@ -32,10 +33,11 @@ type LogoutForm struct {
 }
 
 type UserUpdateForm struct {
-	Username  string `json:"username" binding:"required"`
+	Username  string `json:"username"`
 	Nickname  string `json:"nickname"`
 	Avatar    string `json:"avatar"`
 	Introduce string `json:"introduce"`
+	FaceImg   string `json:"faceImg"`
 }
 
 type UserDetail struct {
@@ -52,4 +54,11 @@ type UserDetail struct {
 type UserSearch struct {
 	utils.PageList
 	Records []*UserDetail `json:"records"`
+}
+
+type Face struct {
+	models.User
+	IsFirstLogin uint   `json:"isFirstLogin"`
+	Token        string `json:"token"`
+	IsFound      bool   `json:"isFound"`
 }
