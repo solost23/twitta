@@ -14,6 +14,7 @@ import (
 	"twitta/pkg/domain"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
+	servantEs "twitta/services/servants/es"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -40,27 +41,19 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		return err
 	}
 
-	// 推文携带创建者信息，方便后续直接搜索展示
-	type Document struct {
-		*models.Tweet
-		Username string `json:"username"`
-		Avatar   string `json:"avatar"`
-	}
-	postDocument := Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}
-	documentJson, _ := json.Marshal(postDocument)
-	_, err = domain.NewESClient().Create(c, &es_service.CreateRequest{
-		Header: &common.RequestHeader{
-			Requester:   user.Username,
-			OperatorUid: -1,
-			TraceId:     -1,
-		},
-		Index:      constants.ESCINDEXTWEET,
-		DocumentId: data.ID,
-		Document:   string(documentJson),
-	})
-	if err != nil {
-		zap.S().Errorf(err.Error())
-	}
+	go func() {
+		// 推文携带创建者信息，方便后续直接搜索展示
+		type Document struct {
+			*models.Tweet
+			Username string `json:"username"`
+			Avatar   string `json:"avatar"`
+		}
+
+		if err = servantEs.Save(c, constants.ESCINDEXTWEET, data.ID, Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}); err != nil {
+			zap.S().Error(err)
+		}
+	}()
+
 	return nil
 }
 
@@ -80,18 +73,12 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 		return err
 	}
 
-	_, err = domain.NewESClient().Delete(c, &es_service.DeleteRequest{
-		Header: &common.RequestHeader{
-			Requester:   user.Username,
-			OperatorUid: -1,
-			TraceId:     -1,
-		},
-		Index:      constants.ESCINDEXTWEET,
-		DocumentId: id,
-	})
-	if err != nil {
-		zap.S().Errorf(err.Error())
-	}
+	go func() {
+		if err = servantEs.Delete(c, constants.ESCINDEXTWEET, id); err != nil {
+			zap.S().Error(err)
+		}
+	}()
+
 	return nil
 }
 
