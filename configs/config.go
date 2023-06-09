@@ -1,10 +1,11 @@
 package configs
 
 type ServerConfig struct {
-	Version               string              `mapstructure:"version"`
+	Name                  string              `mapstructure:"name"`
 	DebugMode             string              `mapstructure:"debug_mode"`
-	TimeLocation          string              `mapstructure:"time_location"`
 	Addr                  string              `mapstructure:"addr"`
+	Port                  int                 `mapstructure:"port"`
+	TimeLocation          string              `mapstructure:"time_location"`
 	PrometheusEnable      bool                `mapstructure:"prometheus_enable"`
 	ConfigPath            string              `mapstructure:"config_path"`
 	MongoConfig           MongoConf           `mapstructure:"mongo"`

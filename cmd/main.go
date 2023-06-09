@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/go-cleanhttp"
 	"go.uber.org/zap"
 	"twitta/global"
 	"twitta/global/initialize"
@@ -45,35 +45,33 @@ func main() {
 	}
 
 	initialize.Initialize(execDir)
+	client, err := api.NewClient(&api.Config{
+		Address:   fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port),
+		Scheme:    "http",
+		Transport: cleanhttp.DefaultTransport(),
+	})
+	if err != nil {
+		zap.S().Panic(err)
+	}
+
 	// HTTP init
 	app := gin.New()
 	routers.Setup(app)
 
-	// Run the server
-	server := &http.Server{
-		Addr:         global.ServerConfig.Addr,
-		Handler:      app,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			if err == http.ErrServerClosed {
-				zap.S().Errorf("Server closed")
-			} else {
-				zap.S().Errorf("Server closed unexpect %s", err.Error())
-			}
-		}
-	}()
+	routers.Run(client, app)
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		si := <-c
 		switch si {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			_ = server.Close()
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP:
+			// 注销consul服务
+			if err = client.Agent().ServiceDeregister(global.ServerConfig.Addr); err != nil {
+				zap.S().Error("consul unregister service failed", global.ServerConfig.Addr, err)
+			}
+			zap.S().Info("consul unregister service success")
 			return
-		case syscall.SIGHUP:
 		default:
 			return
 		}

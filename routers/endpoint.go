@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -9,6 +11,13 @@ import (
 )
 
 func SetRouters(r *gin.Engine) {
+	// consul健康检查
+	r.GET("", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "success",
+		})
+	})
+
 	group := r.Group("api/twitta")
 	initNoAuthRouter(group)
 	group.Use(
