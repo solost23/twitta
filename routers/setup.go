@@ -7,7 +7,7 @@ import (
 )
 
 func Setup(app *gin.Engine) {
-	gin.SetMode(global.ServerConfig.DebugMode)
+	gin.SetMode(global.ServerConfig.Mode)
 
 	app.Use(middlewares.RequestLog())
 

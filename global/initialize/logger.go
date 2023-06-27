@@ -13,7 +13,7 @@ import (
 
 func InitLogger(filePath string) {
 	var logger *zap.Logger
-	switch global.ServerConfig.DebugMode {
+	switch global.ServerConfig.Mode {
 	case "debug":
 		logger, _ = zap.NewDevelopment()
 	case "release":

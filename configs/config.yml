@@ -1,5 +1,5 @@
 name: "twitta"
-debug_mode: "debug"
+mode: "debug"
 port: 6565
 time_location: "Asia/Shanghai"
 prometheus_enable: true

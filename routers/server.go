@@ -24,7 +24,7 @@ func Run(client *api.Client, app *gin.Engine) {
 	serverConfig := global.ServerConfig
 	ip := "127.0.0.1"
 
-	if serverConfig.DebugMode != gin.DebugMode {
+	if serverConfig.Mode != gin.DebugMode {
 		ip, err = utils.GetInternalIP()
 		if err != nil {
 			zap.S().Panic("failed to get internal ip", err.Error())
