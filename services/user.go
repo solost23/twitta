@@ -121,6 +121,7 @@ func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (stri
 	return utils.FulfillImageOSSPrefix(utils.TrimDomainPrefix(url)), nil
 }
 
+// Login 可以抽出来做成一个Http服务多平台登录
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
 	db := models.NewDB()
 
@@ -132,7 +133,7 @@ func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginRe
 		return nil, errors.New("用户名或密码错误")
 	}
 
-	token, err := loginAndGetToken(c, params.Device, user)
+	token, err := loginAndGetToken(c, params.Platform, user)
 	if err != nil {
 		return nil, err
 	}
@@ -196,36 +197,39 @@ func (s *Service) Face(c *gin.Context, file *multipart.FileHeader) (*forms.Face,
 	return result, nil
 }
 
-func loginAndGetToken(ctx context.Context, device string, user *models.User) (string, error) {
+func loginAndGetToken(ctx context.Context, platform string, user *models.User) (string, error) {
 	if user.Disabled == 1 {
 		return "", errors.New("您的账户已被禁用，请联系管理员")
 	}
 
-	// 区分两种设备 分别是web和mobile
 	var redisPrefix string
-	if device == "web" {
-		redisPrefix = constants.WebRedisPrefix
-	} else {
-		redisPrefix = constants.MobileRedisPrefix
+	switch platform {
+	case "twitta":
+		redisPrefix = constants.TwittaRedisPrefix
+	case "video_server":
+		redisPrefix = constants.VideoServerRedisPrefix
+	default:
+		return "", errors.New("暂不支持此平台类型登录")
 	}
 
-	j := middlewares.NewJWT()
 	claims := middlewares.CustomClaims{
 		UserId: user.ID,
 		Device: redisPrefix,
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix(),
 			ExpiresAt: time.Now().Unix() + global.ServerConfig.JWTConfig.Duration,
-			Issuer:    "twitta",
+			Issuer:    "user",
 		},
 	}
+
+	j := middlewares.NewJWT()
 	token, err := j.CreateToken(claims)
 	if err != nil {
-		return "nil", err
+		return "", err
 	}
 	userJson, err := json.Marshal(user)
 	if err != nil {
-		return "nil", err
+		return "", err
 	}
 	rdb, err := cache.RedisConnFactory(10)
 	if err != nil {
@@ -235,9 +239,9 @@ func loginAndGetToken(ctx context.Context, device string, user *models.User) (st
 	key := redisPrefix + user.ID
 	oldToken, err := rdb.Get(ctx, key).Result()
 
-	rdb.Del(ctx, constants.RedisPrefix+oldToken)
+	rdb.Del(ctx, redisPrefix+oldToken)
 	rdb.Set(ctx, key, token, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
-	rdb.Set(ctx, constants.RedisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
+	rdb.Set(ctx, redisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 
 	_, err = models.GWhereUpdate[models.User](ctx, models.NewDB().GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
 	if err != nil {
@@ -255,17 +259,20 @@ func (s *Service) Logout(c *gin.Context, params *forms.LogoutForm) error {
 		return err
 	}
 	var redisPrefix string
-	if params.Device == "web" {
-		redisPrefix = constants.WebRedisPrefix
-	} else {
-		redisPrefix = constants.MobileRedisPrefix
+	switch *params.Platform {
+	case "twitta":
+		redisPrefix = constants.TwittaRedisPrefix
+	case "video_server":
+		redisPrefix = constants.VideoServerRedisPrefix
+	default:
+		return errors.New("暂不支持此平台类型登录")
 	}
 	key := redisPrefix + user.ID
 	token, err := rdb.Get(c, key).Result()
 	if err != nil {
 		return err
 	}
-	rdb.Del(c, constants.RedisPrefix+token)
+	rdb.Del(c, redisPrefix+token)
 	return nil
 }
 

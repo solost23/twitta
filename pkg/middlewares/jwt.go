@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
 	"twitta/global"
 	"twitta/pkg/cache"
-	"twitta/pkg/constants"
 	"twitta/pkg/models"
 	"twitta/pkg/response"
 
@@ -22,6 +22,7 @@ func JWTAuth() gin.HandlerFunc {
 			response.Error(c, 1999, errors.New("请登录"))
 			return
 		}
+
 		j := NewJWT()
 		claims, err := j.ParseToken(token)
 		if err != nil {
@@ -37,6 +38,7 @@ func JWTAuth() gin.HandlerFunc {
 			response.Error(c, 1999, err)
 			return
 		}
+
 		jwtToken, err := rdb.Get(c, claims.Device+claims.UserId).Result()
 		if err != nil {
 			response.Error(c, 1999, errors.New("无效 token"))
@@ -46,7 +48,7 @@ func JWTAuth() gin.HandlerFunc {
 			response.Error(c, 1999, errors.New("无效 token"))
 			return
 		}
-		jsonUser, err := rdb.Get(c, constants.RedisPrefix+token).Result()
+		jsonUser, err := rdb.Get(c, claims.Device+token).Result()
 		if err != nil {
 			response.Error(c, 1999, errors.New("无效 token"))
 			return

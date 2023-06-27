@@ -19,7 +19,7 @@ type RegisterForm struct {
 type LoginForm struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
-	Device   string `json:"device" comment:"设备类型" binding:"required,oneof=ios android web"`
+	Platform string `json:"platform" comment:"平台" binding:"required,oneof=twitta video_server"`
 }
 
 type LoginResponse struct {
@@ -29,7 +29,7 @@ type LoginResponse struct {
 }
 
 type LogoutForm struct {
-	Device string `json:"device" comment:"设备类型" binding:"required,oneof=ios android web"`
+	Platform *string `json:"platform" comment:"平台" binding:"required,oneof=twitta video_server"`
 }
 
 type UserUpdateForm struct {

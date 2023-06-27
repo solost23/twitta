@@ -1,10 +1,10 @@
 package constants
 
 const (
-	RedisPrefix = "twitta"
+	LoginRedisPrefix = "user_"
 
-	WebRedisPrefix    = RedisPrefix + "web_"
-	MobileRedisPrefix = RedisPrefix + "mobile_"
+	TwittaRedisPrefix      = LoginRedisPrefix + "twitta_"
+	VideoServerRedisPrefix = LoginRedisPrefix + "video_server_"
 
 	Secret = "ajgiengien"
 )
