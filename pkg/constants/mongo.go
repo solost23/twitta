@@ -1,5 +1,5 @@
 package constants
 
 const (
-	Mongo = "twitta"
+	DefaultDB = "twitta"
 )

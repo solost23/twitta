@@ -2,21 +2,22 @@ package services
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
-	"testing"
 	"twitta/forms"
 	"twitta/pkg/utils"
 )
 
-func TestService_UserSearch(t *testing.T) {
+func TestServiceUserSearch(t *testing.T) {
 	ginCtx, _ := gin.CreateTestContext(&http.TestResponseWriter{})
 	type arg struct {
 		ctx    *gin.Context
 		params *forms.SearchForm
 	}
 	type want struct {
-		results []*forms.UserDetailResponse
+		results []*forms.UserSearch
 		err     error
 	}
 	tests := []struct {

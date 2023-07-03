@@ -13,8 +13,8 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/solost23/protopb/gen/go/protos/common"
 	"github.com/solost23/protopb/gen/go/protos/oss"
+	"twitta/global"
 	"twitta/pkg/constants"
-	"twitta/pkg/domain"
 	"twitta/pkg/utils"
 )
 
@@ -73,9 +73,7 @@ func uploadImgOrVidBytes(userId uint, folderName string, postFileName string, fi
 }
 
 func upload(userId uint, folder, filename string, fileBytes []byte) (url string, err error) {
-
-	client := domain.NewOSSClient()
-	uploadResponse, err := client.Upload(context.Background(), &oss.UploadRequest{
+	uploadResponse, err := global.OssSrvClient.Upload(context.Background(), &oss.UploadRequest{
 		Header: &common.RequestHeader{
 			Requester: strconv.Itoa(int(userId)),
 			TraceId:   10000,

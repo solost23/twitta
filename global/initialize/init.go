@@ -1,6 +1,8 @@
 package initialize
 
-import "path"
+import (
+	"path"
+)
 
 const (
 	WebConfigPath = "configs/config.yml"

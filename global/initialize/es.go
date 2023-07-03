@@ -1,4 +1,4 @@
-package domain
+package initialize
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"twitta/global"
 )
 
-func NewESClient() es_service.SearchClient {
+func InitESClient() {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
@@ -26,5 +26,6 @@ func NewESClient() es_service.SearchClient {
 	if err != nil {
 		panic(err)
 	}
-	return es_service.NewSearchClient(cc)
+
+	global.EsSrvClient = es_service.NewSearchClient(cc)
 }

@@ -3,20 +3,20 @@ package services
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 	"twitta/forms"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
 )
 
 func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	fans, err := models.GWhereFind[models.Fan](c, db.GetCollection(models.NewFan().TableName()), bson.M{"target_id": user.ID})
+	fans, err := models.GWhereFind[models.Fan](c, (&models.Fan{}).Conn(), bson.M{"target_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 	for _, fan := range fans {
 		userIds = append(userIds, fan.UserId)
 	}
-	users, err := models.GWhereFind[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -40,10 +40,9 @@ func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 }
 
 func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	fans, err := models.GWhereFind[models.Fan](c, db.GetCollection(models.NewFan().TableName()), bson.M{"user_id": user.ID})
+	fans, err := models.GWhereFind[models.Fan](c, (&models.Fan{}).Conn(), bson.M{"user_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 		userIds = append(userIds, fan.UserId)
 	}
 
-	users, err := models.GWhereFind[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,6 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 }
 
 func (*Service) WhatUser(c *gin.Context, id string) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
 	// 不能关注自己
@@ -79,7 +77,7 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 		return errors.New(fmt.Sprintf("不能关注自己"))
 	}
 	// 判断，如果已关注，那么直接提示不可重复关注
-	_, err := models.GWhereFirst[models.Fan](c, db.GetCollection(models.NewFan().TableName()), bson.M{"user_id": user.ID, "target_id": id})
+	_, err := models.GWhereFirst[models.Fan](c, (&models.Fan{}).Conn(), bson.M{"user_id": user.ID, "target_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -96,16 +94,16 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 		UserId:   user.ID,
 		TargetId: id,
 	}
-	_, err = models.GInsertOne[models.Fan](c, db.GetCollection(models.NewFan().TableName()), &data)
+	_, err = models.GInsertOne[models.Fan](c, (&models.Fan{}).Conn(), &data)
 	if err != nil {
 		return err
 	}
 	// 将目标用户的粉丝数 +1, 源用户的关注数量 +1
-	_, err = models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": 1}})
+	_, err = models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": 1}})
 	if err != nil {
 		return err
 	}
-	_, err = models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": 1}})
+	_, err = models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": 1}})
 	if err != nil {
 		return err
 	}
@@ -113,19 +111,18 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 }
 
 func (*Service) WhatUserDelete(c *gin.Context, id string) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	_, err := models.GWhereDelete[models.Fan](c, db.GetCollection(models.NewFan().TableName()), bson.M{"user_id": user.ID, "target_id": id})
+	_, err := models.GWhereDelete[models.Fan](c, (&models.Fan{}).Conn(), bson.M{"user_id": user.ID, "target_id": id})
 	if err != nil {
 		return err
 	}
 	// 将目标用户的粉丝数量 -1, 源用户的关注数量 -1
-	_, err = models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": -1}})
+	_, err = models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID}, bson.M{"$inc": bson.M{"wechat_count": -1}})
 	if err != nil {
 		return err
 	}
-	_, err = models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": -1}})
+	_, err = models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": -1}})
 	if err != nil {
 		return err
 	}

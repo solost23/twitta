@@ -18,47 +18,45 @@ func SetRouters(r *gin.Engine) {
 		})
 	})
 
-	group := r.Group("api/twitta")
-	initNoAuthRouter(group)
-	group.Use(
+	apiGroup := r.Group("api/twitta")
+	{
+		// 用户注册
+		apiGroup.POST("register", register)
+		// 上传头像
+		apiGroup.POST("register/avatar", uploadAvatar)
+		// 用户登录
+		apiGroup.POST("login", login)
+		// 用户扫脸登录
+		apiGroup.POST("face", face)
+
+		// 展示所有推文
+		apiGroup.GET("tweet", tweetList)
+		// 用户搜索 - 采用全局搜索
+		apiGroup.GET("user/search", userSearch)
+		// 推文搜索 - 采用全局搜索
+		apiGroup.GET("tweet/search", tweetSearch)
+
+		// swagger
+		apiGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+	apiGroup.Use(
 		middlewares.JWTAuth(),
 		// middlewares.AuthCheckRole(),
 	)
-
-	initAuthRouter(group)
-}
-
-func initNoAuthRouter(group *gin.RouterGroup) {
-	group.POST("register", register)
-	group.POST("register/avatar", uploadAvatar)
-	group.POST("login", login)
-	// 验证用户脸部
-	group.POST("face", face)
-
-	// 展示所有推文
-	group.GET("tweet", tweetList)
-	// 用户搜索 - 采用全局搜索
-	group.GET("user/search", userSearch)
-	// 推文搜索 - 采用全局搜索
-	group.GET("tweet/search", tweetSearch)
-
-	// swagger
-	group.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-}
-
-func initAuthRouter(group *gin.RouterGroup) {
-	// 用户相关
-	initAuthUserRouter(group)
-	// 推文相关
-	initAuthTweetRouter(group)
-	// 交友相关
-	initAuthFriendRouter(group)
-	// 聊天相关
-	initAuthChatRouter(group)
-	// 关注-粉丝相关
-	initFansRouter(group)
-	// 点赞-评论相关
-	initCommentRouter(group)
+	{
+		// 用户相关
+		initAuthUserRouter(apiGroup)
+		// 推文相关
+		initAuthTweetRouter(apiGroup)
+		// 交友相关
+		initAuthFriendRouter(apiGroup)
+		// 聊天相关
+		initAuthChatRouter(apiGroup)
+		// 关注-粉丝相关
+		initFansRouter(apiGroup)
+		// 点赞-评论相关
+		initCommentRouter(apiGroup)
+	}
 }
 
 func initAuthUserRouter(group *gin.RouterGroup) {

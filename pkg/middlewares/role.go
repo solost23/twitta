@@ -3,6 +3,7 @@ package middlewares
 import (
 	"errors"
 	"fmt"
+
 	"github.com/casbin/casbin/v2"
 	mongoadapter "github.com/casbin/mongodb-adapter/v3"
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ func AuthCheckRole() gin.HandlerFunc {
 		role := utils.GetUser(c).Role
 		mongoConf := global.ServerConfig.MongoConfig
 		mc := mongooptions.Client().ApplyURI(fmt.Sprintf("mongodb://%s", mongoConf.Hosts[0]))
-		a, err := mongoadapter.NewAdapterWithCollectionName(mc, constants.Mongo, "casbin_rules")
+		a, err := mongoadapter.NewAdapterWithCollectionName(mc, constants.DefaultDB, "casbin_rules")
 		if err != nil {
 			response.Error(c, 2001, err)
 			return

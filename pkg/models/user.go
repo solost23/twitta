@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // 定义基本模型，对数据进行增删改查时结构可以变动
@@ -22,10 +24,6 @@ type User struct {
 	Disabled      uint      `json:"disabled" bson:"disabled" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
 	FaceImg       string    `json:"faceImg" bson:"face_img" comment:"用户人脸"`
 	FaceEncoding  string    `json:"faceEncoding" bson:"face_encoding" comment:"用户人脸编码"`
-}
-
-func NewUser() *User {
-	return &User{}
 }
 
 func (*User) TableName() string {
@@ -90,3 +88,7 @@ func (*User) TableName() string {
 //	}
 //	return count, nil
 // }
+
+func (m *User) Conn() *mongo.Collection {
+	return NewCollection(m.TableName()).Build()
+}

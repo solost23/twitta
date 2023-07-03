@@ -1,22 +1,22 @@
-package domain
+package initialize
 
 import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
-	face_recognition_service "github.com/solost23/protopb/gen/go/protos/face_recognition"
+	"github.com/solost23/protopb/gen/go/protos/push"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"twitta/global"
 )
 
-func NewFaceRecognitionClient() face_recognition_service.FaceRecognitionClient {
+func InitPushClient() {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
 	target := fmt.Sprintf("consul://%s:%d/%s",
-		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.FaceRecognitionConfig.Name)
+		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.PushSrvConfig.Name)
 
 	cc, err := grpc.Dial(
 		target,
@@ -26,5 +26,6 @@ func NewFaceRecognitionClient() face_recognition_service.FaceRecognitionClient {
 	if err != nil {
 		panic(err)
 	}
-	return face_recognition_service.NewFaceRecognitionClient(cc)
+
+	global.PushSrvClient = push.NewPushClient(cc)
 }

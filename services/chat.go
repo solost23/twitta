@@ -18,7 +18,7 @@ func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*fo
 		"user_id":   bson.M{"$in": []string{user.ID, id}},
 		"target_id": bson.M{"$in": []string{user.ID, id}},
 	}
-	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, models.NewDB().GetCollection(models.NewLogPrivateLatter().TableName()), &models.ListPageInput{
+	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, (&models.LogPrivateLatter{}).Conn(), &models.ListPageInput{
 		Page: params.Page,
 		Size: params.Size,
 	}, "", filter)

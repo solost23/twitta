@@ -33,18 +33,27 @@ var (
 	st, v, V bool
 )
 
-func main() {
+func init() {
 	flag.StringVar(&execDir, "d", ".", "项目目录")
 	flag.BoolVar(&v, "v", false, "查看版本号")
 	flag.BoolVar(&V, "V", false, "查看版本号")
 	flag.BoolVar(&st, "s", false, "项目状态")
 	flag.Parse()
+}
+
+func main() {
 	if v || V {
 		fmt.Println(version)
 		os.Exit(-1)
 	}
 
 	initialize.Initialize(execDir)
+	// 初始化所需要的服务
+	initialize.InitESClient()
+	initialize.InitFaceRecognitionClient()
+	initialize.InitOSSClient()
+	initialize.InitPushClient()
+
 	client, err := api.NewClient(&api.Config{
 		Address:   fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port),
 		Scheme:    "http",

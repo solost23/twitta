@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"twitta/forms"
+	"twitta/global"
 	"twitta/pkg/constants"
-	"twitta/pkg/domain"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
 	servantEs "twitta/services/servants/es"
@@ -22,7 +22,6 @@ import (
 )
 
 func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 	data := &models.Tweet{
 		BaseModel: models.BaseModel{
@@ -36,7 +35,7 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		ThumbCount:   0,
 		CommentCount: 0,
 	}
-	_, err := models.GInsertOne[models.User](c, db.GetCollection(models.NewTweet().TableName()), data)
+	_, err := models.GInsertOne[models.User](c, (&models.Tweet{}).Conn(), data)
 	if err != nil {
 		return err
 	}
@@ -58,17 +57,16 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 }
 
 func (*Service) TweetDelete(c *gin.Context, id string) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	tweet, err := models.GWhereFirst[models.Tweet](c, db.GetCollection(models.NewTweet().TableName()), bson.M{"_id": id})
+	tweet, err := models.GWhereFirst[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
 	if user.ID != tweet.UserID {
 		return errors.New("本推文所属用户不是您，无权删除")
 	}
-	_, err = models.GWhereDelete[models.Tweet](c, db.GetCollection(models.NewTweet().TableName()), bson.M{"_id": id})
+	_, err = models.GWhereDelete[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
@@ -83,9 +81,7 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 }
 
 func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetList, error) {
-	db := models.NewDB()
-
-	tweets, err := models.GWhereFind[models.Tweet](c, db.GetCollection(models.NewTweet().TableName()), bson.M{})
+	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{})
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +89,7 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 	for _, tweet := range tweets {
 		userIds = append(userIds, tweet.UserID)
 	}
-	users, err := models.GWhereFind[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +125,9 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 }
 
 func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	tweets, err := models.GWhereFind[models.Tweet](c, db.GetCollection(models.NewTweet().TableName()), bson.M{"user_id": user.ID})
+	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"user_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -158,10 +153,9 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 }
 
 func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	favorites, err := models.GWhereFind[models.Favorite](c, db.GetCollection(models.NewFavorite().TableName()), bson.M{"user_id": user.ID})
+	favorites, err := models.GWhereFind[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +163,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	for _, favorite := range favorites {
 		tweetIds = append(tweetIds, favorite.TweetId)
 	}
-	tweets, err := models.GWhereFind[models.Tweet](c, db.GetCollection(models.NewTweet().TableName()), bson.M{"_id": bson.M{"$in": tweetIds}})
+	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": bson.M{"$in": tweetIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +171,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	for _, tweet := range tweets {
 		userIds = append(userIds, tweet.UserID)
 	}
-	users, err := models.GWhereFind[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -214,11 +208,10 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 }
 
 func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
 	// 查询此用户有无收藏此文章
-	_, err := models.GWhereFirst[models.Favorite](c, db.GetCollection(models.NewFavorite().TableName()), bson.M{"user_id": user.ID, "tweet_id": params.Id})
+	_, err := models.GWhereFirst[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID, "tweet_id": params.Id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -234,7 +227,7 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 		UserId:  user.ID,
 		TweetId: params.Id,
 	}
-	_, err = models.GInsertOne[models.Favorite](c, db.GetCollection(models.NewFavorite().TableName()), data)
+	_, err = models.GInsertOne[models.Favorite](c, (&models.Favorite{}).Conn(), data)
 	if err != nil {
 		return err
 	}
@@ -242,10 +235,9 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 }
 
 func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
-	_, err := models.GWhereDelete[models.Favorite](c, db.GetCollection(models.NewFavorite().TableName()), bson.M{"user_id": user.ID, "_id": id})
+	_, err := models.GWhereDelete[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID, "_id": id})
 	if err != nil {
 		return err
 	}
@@ -254,7 +246,7 @@ func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 
 func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) (*forms.TweetList, error) {
 
-	searchResult, err := domain.NewESClient().Search(c, &es_service.SearchRequest{
+	searchResult, err := global.EsSrvClient.Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
 			Requester:   "search_tweet",
 			OperatorUid: -1,

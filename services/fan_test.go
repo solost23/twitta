@@ -2,13 +2,14 @@ package services
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
-	"testing"
 	"twitta/forms"
 )
 
-func TestService_FanList(t *testing.T) {
+func TestServiceFanList(t *testing.T) {
 	ginCtx, _ := gin.CreateTestContext(&http.TestResponseWriter{})
 	type arg struct {
 		ctx *gin.Context

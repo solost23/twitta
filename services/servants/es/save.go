@@ -7,7 +7,7 @@ import (
 
 	"github.com/solost23/protopb/gen/go/protos/common"
 	es_service "github.com/solost23/protopb/gen/go/protos/es"
-	"twitta/pkg/domain"
+	"twitta/global"
 )
 
 // Save 将数据存入ES
@@ -22,7 +22,7 @@ func Save(ctx context.Context, index, id string, data any) error {
 	if err != nil {
 		return err
 	}
-	reply, err := domain.NewESClient().Create(ctx, &es_service.CreateRequest{
+	reply, err := global.EsSrvClient.Create(ctx, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
 			Requester:   "",
 			OperatorUid: -1,

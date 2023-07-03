@@ -1,4 +1,4 @@
-package domain
+package initialize
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"twitta/global"
 )
 
-func NewOSSClient() oss.OssClient {
+func InitOSSClient() {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
@@ -27,5 +27,6 @@ func NewOSSClient() oss.OssClient {
 	if err != nil {
 		panic(err)
 	}
-	return oss.NewOssClient(cc)
+
+	global.OssSrvClient = oss.NewOssClient(cc)
 }

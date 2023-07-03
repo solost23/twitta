@@ -2,12 +2,14 @@ package services
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/http"
 	"os"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/http"
 	"twitta/global/initialize"
 	"twitta/pkg/models"
+	"twitta/pkg/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -15,7 +17,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestService_TweetList(t *testing.T) {
+func TestServiceTweetList(t *testing.T) {
 	ginCtx, _ := gin.CreateTestContext(&http.TestResponseWriter{})
 	ginCtx.Set("user", &models.User{})
 	type arg struct {
@@ -39,7 +41,7 @@ func TestService_TweetList(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		results, err := (&Service{}).TweetList(test.arg.ctx)
+		results, err := (&Service{}).TweetList(test.arg.ctx, &utils.PageForm{})
 		if err != test.want.err {
 			t.Errorf("%v \n", err.Error())
 		}

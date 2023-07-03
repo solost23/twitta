@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"math"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,32 +11,36 @@ import (
 	"twitta/pkg/constants"
 )
 
-// return collection, 丢弃interface设计，使用一份代码操作所有表
-type db struct {
-	Conn *mongo.Client
-	Name *string
+// 丢弃interface设计，使用一份代码操作所有表
+
+type CollectionOption func(collection *Collection)
+
+type Collection struct {
+	DbName         string
+	CollectionName string
 }
 
-func NewDB() *db {
-	name := constants.Mongo
-	return &db{
-		Conn: global.DB,
-		Name: &name,
+func NewCollection(collection string, opts ...CollectionOption) *Collection {
+	c := &Collection{}
+	c.DbName = constants.DefaultDB
+	c.CollectionName = collection
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
+}
+
+func WithDatabase(name string) CollectionOption {
+	return func(collection *Collection) {
+		collection.CollectionName = name
 	}
 }
 
-func (builder *db) WithConn(conn *mongo.Client) *db {
-	builder.Conn = conn
-	return builder
-}
-
-func (builder *db) WithName(name string) *db {
-	builder.Name = &name
-	return builder
-}
-
-func (builder *db) GetCollection(collection string) *mongo.Collection {
-	return builder.Conn.Database(*builder.Name).Collection(collection)
+func (c *Collection) Build() *mongo.Collection {
+	fmt.Println(c.DbName, c.CollectionName)
+	fmt.Printf("%T", global.DB)
+	return global.DB.Database(c.DbName).Collection(c.CollectionName)
 }
 
 func GInsertOne[T any](ctx context.Context, collection *mongo.Collection, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {

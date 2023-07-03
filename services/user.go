@@ -21,7 +21,6 @@ import (
 	"twitta/global"
 	"twitta/pkg/cache"
 	"twitta/pkg/constants"
-	"twitta/pkg/domain"
 	"twitta/pkg/middlewares"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
@@ -36,9 +35,7 @@ import (
 )
 
 func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
-	db := models.NewDB()
-
-	_, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"username": params.Username})
+	_, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -86,7 +83,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		FaceImg:      utils.TrimDomainPrefix(faceImg),
 		FaceEncoding: faceEncoding,
 	}
-	_, err = models.GInsertOne[models.User](c, db.GetCollection(models.NewUser().TableName()), data)
+	_, err = models.GInsertOne[models.User](c, (&models.User{}).Conn(), data)
 	if err != nil {
 		return err
 	}
@@ -123,9 +120,7 @@ func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (stri
 
 // Login 可以抽出来做成一个Http服务多平台登录
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
-	db := models.NewDB()
-
-	user, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"username": params.Username})
+	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
@@ -173,10 +168,7 @@ func (s *Service) Face(c *gin.Context, file *multipart.FileHeader) (*forms.Face,
 	if !isFound {
 		return result, nil
 	}
-
-	db := models.NewDB()
-
-	user, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": userId})
+	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": userId})
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +235,7 @@ func loginAndGetToken(ctx context.Context, platform string, user *models.User) (
 	rdb.Set(ctx, key, token, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 	rdb.Set(ctx, redisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 
-	_, err = models.GWhereUpdate[models.User](ctx, models.NewDB().GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
+	_, err = models.GWhereUpdate[models.User](ctx, (&models.User{}).Conn(), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
 	if err != nil {
 		return "", err
 	}
@@ -277,7 +269,6 @@ func (s *Service) Logout(c *gin.Context, params *forms.LogoutForm) error {
 }
 
 func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
-	db := models.NewDB()
 	user := utils.GetUser(c)
 
 	data := bson.M{}
@@ -313,11 +304,11 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		}
 	}
 	update := bson.M{"$set": data}
-	_, err := models.GWhereUpdate[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID}, update)
+	_, err := models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID}, update)
 	if err != nil {
 		return err
 	}
-	user, err = models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": user.ID})
+	user, err = models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID})
 	if err != nil {
 		return err
 	}
@@ -337,9 +328,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 }
 
 func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
-	db := models.NewDB()
-
-	user, err := models.GWhereFirst[models.User](c, db.GetCollection(models.NewUser().TableName()), bson.M{"_id": id})
+	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
@@ -361,7 +350,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error)
 
 func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.UserSearch, error) {
 
-	searchResult, err := domain.NewESClient().Search(c, &es_service.SearchRequest{
+	searchResult, err := global.EsSrvClient.Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
 			Requester:   "search_user",
 			OperatorUid: -1,
