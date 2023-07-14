@@ -64,7 +64,7 @@ func main() {
 	}
 
 	// HTTP init
-	app := gin.New()
+	app := gin.Default()
 	routers.Setup(app)
 
 	routers.Run(client, app)

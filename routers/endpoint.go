@@ -12,8 +12,8 @@ import (
 
 func SetRouters(r *gin.Engine) {
 	// consul健康检查
-	r.GET("", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
+	r.GET("", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 		})
 	})
