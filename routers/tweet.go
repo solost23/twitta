@@ -2,6 +2,7 @@ package routers
 
 import (
 	"twitta/forms"
+	"twitta/pkg/constants"
 	"twitta/pkg/response"
 	"twitta/pkg/utils"
 	"twitta/services"
@@ -20,6 +21,21 @@ func tweetSend(c *gin.Context) {
 		return
 	}
 	response.MessageSuccess(c, "成功", nil)
+}
+
+func staticUpload(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, constants.BadRequestCode, err)
+		return
+	}
+	result, err := services.NewService().StaticUpload(c, file)
+	if err != nil {
+		response.Error(c, constants.InternalServerErrorCode, err)
+		return
+	}
+
+	response.Success(c, result)
 }
 
 func tweetDelete(c *gin.Context) {

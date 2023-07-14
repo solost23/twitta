@@ -76,6 +76,8 @@ func initAuthTweetRouter(group *gin.RouterGroup) {
 	{
 		// 发送推文
 		tweet.POST("", tweetSend)
+		// 推文文件上传
+		tweet.POST("static", staticUpload)
 		// 删除推文
 		tweet.DELETE(":id", tweetDelete)
 		// 收藏推文

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"mime/multipart"
 	"time"
 
 	"github.com/solost23/protopb/gen/go/protos/common"
@@ -54,6 +55,16 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 	}()
 
 	return nil
+}
+
+func (s *Service) StaticUpload(c *gin.Context, file *multipart.FileHeader) (string, error) {
+	folder := "twitta.tweets.static"
+
+	url, err := UploadImg(0, folder, file.Filename, file)
+	if err != nil {
+		return "", err
+	}
+	return utils.FulfillImageOSSPrefix(utils.TrimDomainPrefix(url)), nil
 }
 
 func (*Service) TweetDelete(c *gin.Context, id string) error {
