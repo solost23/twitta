@@ -1,12 +1,20 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
 	"twitta/pkg/response"
 	"twitta/pkg/utils"
 	"twitta/services"
+
+	"github.com/gin-gonic/gin"
 )
 
+//	@Summary	chatList
+//	@Tags		chat
+//	@Produce	json
+//	@Success	200	{object}	forms.ChatList
+//	@Failure	400	{object}	response.Response
+//	@Param		id	path		string	true	"chatId"
+//	@Router		/chats/{id} [get]
 func chatList(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {

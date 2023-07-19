@@ -10,6 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//@Summary register
+//@Tags user
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param register body forms.RegisterForm true "registerForm"
+//@Router /register [post]
 func register(c *gin.Context) {
 	params := &forms.RegisterForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -23,6 +30,13 @@ func register(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary upload avatar
+//@Tags user
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param file formData file true "userAvatar"
+//@Router /register/avatar [post]
 func uploadAvatar(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -37,15 +51,14 @@ func uploadAvatar(c *gin.Context) {
 	response.Success(c, result)
 }
 
-// @Id Login
-// @Summary Login
-// @Tags    User
-// @Accept  json
-// @Produce json
-// @Param   login body forms.LoginForm true "Login credentials"
-// @Success 200 {object} forms.LoginResponse
-// @Failure 400 {object} response.Response
-// @Router /api/login [post]
+//	@Summary	login
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		login	body		forms.LoginForm	true	"Login credentials"
+//	@Success	200		{object}	forms.LoginResponse
+//	@Failure	400		{object}	response.Response
+//	@Router		/login [post]
 func login(c *gin.Context) {
 	params := &forms.LoginForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -87,6 +100,13 @@ func logout(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary user info update
+//@Tags user
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param userUpdateForm body forms.UserUpdateForm true "userUpdateForm"
+//@Router /users [put]
 func userUpdate(c *gin.Context) {
 	params := &forms.UserUpdateForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -100,6 +120,13 @@ func userUpdate(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary user detail
+//@Tags user
+//@Produce json
+//@Success 200 {object} forms.UserDetail
+//@Failure 400 {object} response.Response
+//@Param id path string true "userId"
+//@Router /users/{id} [get]
 func userDetail(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -115,6 +142,13 @@ func userDetail(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary search user
+//@Tags user
+//@Produce json
+//@Success 200 {object} forms.UserSearch
+//@Failure 400 {object} response.Response
+//@Param searchForm body forms.SearchForm true "searchForm"
+//@Router /users/search [get]
 func userSearch(c *gin.Context) {
 	params := &forms.SearchForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {

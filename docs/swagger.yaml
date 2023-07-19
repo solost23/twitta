@@ -1,5 +1,103 @@
-basePath: /
+basePath: /api/twitta
 definitions:
+  forms.Chat:
+    properties:
+      createdAt:
+        type: string
+      msg:
+        type: string
+      userId:
+        type: string
+    type: object
+  forms.ChatList:
+    properties:
+      current:
+        type: integer
+      pages:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/forms.Chat'
+        type: array
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  forms.Comment:
+    properties:
+      avatar:
+        type: string
+      children:
+        items:
+          $ref: '#/definitions/forms.Comment'
+        type: array
+      content:
+        type: string
+      id:
+        type: string
+      introduce:
+        type: string
+      pid:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
+  forms.CommentInsertForm:
+    properties:
+      content:
+        minLength: 3
+        type: string
+      page:
+        type: integer
+      parentId:
+        type: string
+      size:
+        type: integer
+    required:
+    - content
+    type: object
+  forms.CommentList:
+    properties:
+      current:
+        type: integer
+      pages:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/forms.Comment'
+        type: array
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  forms.FansAndWhatResponse:
+    properties:
+      avatar:
+        type: string
+      introduce:
+        type: string
+      userId:
+        type: string
+    type: object
+  forms.FriendApplicationListResponse:
+    properties:
+      avatar:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      type:
+        type: integer
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
   forms.LoginForm:
     properties:
       password:
@@ -60,6 +158,137 @@ definitions:
       wechatCount:
         type: integer
     type: object
+  forms.RegisterForm:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      faceImg:
+        type: string
+      introduce:
+        type: string
+      mobile:
+        type: string
+      nickname:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  forms.SearchForm:
+    properties:
+      keyword:
+        type: string
+      page:
+        type: integer
+      size:
+        type: integer
+    type: object
+  forms.Tweet:
+    properties:
+      avatar:
+        type: string
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      thumbCount:
+        type: integer
+      title:
+        type: string
+      userId:
+        description: 发推人ID 名称 头像 推文ID 标题，内容，发推时间 点赞数 评论数
+        type: string
+      username:
+        type: string
+    type: object
+  forms.TweetCreateForm:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  forms.TweetFavoriteForm:
+    properties:
+      id:
+        type: string
+    required:
+    - id
+    type: object
+  forms.TweetList:
+    properties:
+      current:
+        type: integer
+      pages:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/forms.Tweet'
+        type: array
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  forms.UserDetail:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      fansCount:
+        type: integer
+      id:
+        type: string
+      introduce:
+        type: string
+      nickname:
+        type: string
+      username:
+        type: string
+      whatCount:
+        type: integer
+    type: object
+  forms.UserSearch:
+    properties:
+      current:
+        type: integer
+      pages:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/forms.UserDetail'
+        type: array
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  forms.UserUpdateForm:
+    properties:
+      avatar:
+        type: string
+      faceImg:
+        type: string
+      introduce:
+        type: string
+      nickname:
+        type: string
+      username:
+        type: string
+    type: object
   response.Response:
     properties:
       code:
@@ -70,19 +299,331 @@ definitions:
       success:
         type: boolean
     type: object
+  utils.PageForm:
+    properties:
+      page:
+        type: integer
+      size:
+        type: integer
+    type: object
 host: localhost:6565
 info:
-  contact:
-    name: twitta
-  description: twitta API documents
-  title: twitta API
+  contact: {}
+  description: twitta api documents
+  title: twitta api
   version: 1.0.0
 paths:
-  /api/login:
+  /chats/{id}:
+    get:
+      parameters:
+      - description: chatId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.ChatList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: chatList
+      tags:
+      - chat
+  /comments/{id}:
+    delete:
+      parameters:
+      - description: commentId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete comment
+      tags:
+      - comment
+    get:
+      parameters:
+      - description: commentId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.CommentList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: commentList
+      tags:
+      - thumb
+    post:
+      parameters:
+      - description: tweetId
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: commentInsertForm
+        in: body
+        name: commentInsert
+        required: true
+        schema:
+          $ref: '#/definitions/forms.CommentInsertForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: create comment
+      tags:
+      - comment
+  /comments/{id}/thumb:
+    delete:
+      parameters:
+      - description: commentId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete thumb
+      tags:
+      - thumb
+    post:
+      parameters:
+      - description: commentId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: create thumb
+      tags:
+      - thumb
+  /fans:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.FansAndWhatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: fan list
+      tags:
+      - fan
+  /fans/{id}:
+    delete:
+      parameters:
+      - description: whatUserId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: cancel what
+      tags:
+      - what
+    post:
+      parameters:
+      - description: whatUserId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: what a user
+      tags:
+      - what
+  /fans/what:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.FansAndWhatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: what list
+      tags:
+      - what
+  /friends:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: send friend application
+      tags:
+      - friend
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.FriendApplicationListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: application list
+      tags:
+      - friend
+  /friends/{id}:
+    delete:
+      parameters:
+      - description: userId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete friend
+      tags:
+      - friend
+  /friends/{id}/accept:
+    put:
+      parameters:
+      - description: userId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: accept friend application
+      tags:
+      - friend
+  /friends/{id}/reject:
+    put:
+      parameters:
+      - description: userId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: reject friend application
+      tags:
+      - friend
+  /login:
     post:
       consumes:
       - application/json
-      operationId: Login
       parameters:
       - description: Login credentials
         in: body
@@ -101,9 +642,310 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: Login
+      summary: login
       tags:
-      - User
+      - user
+  /register:
+    post:
+      parameters:
+      - description: registerForm
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/forms.RegisterForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: register
+      tags:
+      - user
+  /register/avatar:
+    post:
+      parameters:
+      - description: userAvatar
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: upload avatar
+      tags:
+      - user
+  /tweets:
+    get:
+      parameters:
+      - description: pageForm
+        in: body
+        name: pageForm
+        required: true
+        schema:
+          $ref: '#/definitions/utils.PageForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.TweetList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: tweet list
+      tags:
+      - tweet
+    post:
+      parameters:
+      - description: tweetCreateForm
+        in: body
+        name: tweetCreateForm
+        required: true
+        schema:
+          $ref: '#/definitions/forms.TweetCreateForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: send tweet
+      tags:
+      - tweet
+  /tweets/{id}:
+    delete:
+      parameters:
+      - description: tweetId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete tweet
+      tags:
+      - tweet
+  /tweets/favorite:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.TweetList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: favorite tweet list
+      tags:
+      - tweet
+    post:
+      parameters:
+      - description: tweetFavoriteForm
+        in: body
+        name: tweetFavoriteForm
+        required: true
+        schema:
+          $ref: '#/definitions/forms.TweetFavoriteForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: favorite tweet
+      tags:
+      - tweet
+  /tweets/favorite/{id}:
+    delete:
+      parameters:
+      - description: tweetId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: cancel favorite tweet
+      tags:
+      - tweet
+  /tweets/own:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.TweetList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: user tweet
+      tags:
+      - tweet
+  /tweets/search:
+    get:
+      parameters:
+      - description: searchForm
+        in: body
+        name: searchForm
+        required: true
+        schema:
+          $ref: '#/definitions/forms.SearchForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.TweetList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: search tweet
+      tags:
+      - tweet
+  /tweets/static:
+    post:
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: tweet file upload
+      tags:
+      - tweet
+  /users:
+    put:
+      parameters:
+      - description: userUpdateForm
+        in: body
+        name: userUpdateForm
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UserUpdateForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: user info update
+      tags:
+      - user
+  /users/{id}:
+    get:
+      parameters:
+      - description: userId
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.UserDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: user detail
+      tags:
+      - user
+  /users/search:
+    get:
+      parameters:
+      - description: searchForm
+        in: body
+        name: searchForm
+        required: true
+        schema:
+          $ref: '#/definitions/forms.SearchForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.UserSearch'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: search user
+      tags:
+      - user
 schemes:
 - http
 - https

@@ -1,13 +1,21 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
 	"twitta/forms"
 	"twitta/pkg/response"
 	"twitta/pkg/utils"
 	"twitta/services"
+
+	"github.com/gin-gonic/gin"
 )
 
+//	@Summary	commentList
+//	@Tags		thumb
+//	@Produce	json
+//	@Success	200				{object}	forms.CommentList
+//	@Failure	400				{object}	response.Response
+//	@Param		id				path		string	true	"commentId"
+//	@Router		/comments/{id}	[get]
 func commentList(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -35,6 +43,13 @@ func commentList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//	@Summary	create thumb
+//	@Tags		thumb
+//	@Produce	json
+//	@Success	200	{object}	response.Response
+//	@Failure	400	{object}	response.Response
+//	@Param		id	path		string	true	"commentId"
+//	@Router		/comments/{id}/thumb [post]
 func commentThumb(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -48,6 +63,13 @@ func commentThumb(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//	@Summary	delete thumb
+//	@Tags		thumb
+//	@Produce	json
+//	@Success	200	{object}	response.Response
+//	@Failure	400	{object}	response.Response
+//	@Param		id	path		string	true	"commentId"
+//	@Router		/comments/{id}/thumb [delete]
 func commentThumbDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -61,6 +83,14 @@ func commentThumbDelete(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//	@Summary	create comment
+//	@Tags		comment
+//	@Produce	json
+//	@Success	200				{object}	response.Response
+//	@Failure	400				{object}	response.Response
+//	@Param		id				path		string					true	"tweetId"
+//	@Param		commentInsert	body		forms.CommentInsertForm	true	"commentInsertForm"
+//	@Router		/comments/{id} [post]
 func commentInsert(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -79,6 +109,13 @@ func commentInsert(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//	@Summary	delete comment
+//	@Tags		comment
+//	@Produce	json
+//	@Success	200	{object}	response.Response
+//	@Failure	400	{object}	response.Response
+//	@Param		id	path		string	true	"commentId"
+//	@Router		/comments/{id} [delete]
 func commentDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {

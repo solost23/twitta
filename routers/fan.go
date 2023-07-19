@@ -1,12 +1,19 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
 	"twitta/pkg/response"
 	"twitta/pkg/utils"
 	"twitta/services"
+
+	"github.com/gin-gonic/gin"
 )
 
+//	@Summary	fan list
+//	@Tags		fan
+//	@Produce	json
+//	@Success	200	{object}	forms.FansAndWhatResponse
+//	@Failure	400	{object}	response.Response
+//	@Router		/fans [get]
 func fanList(c *gin.Context) {
 	result, err := services.NewService().FanList(c)
 	if err != nil {
@@ -16,6 +23,12 @@ func fanList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary what list
+//@Tags what
+//@Produce json
+//@Success 200 {object} forms.FansAndWhatResponse
+//@Failure 400 {object} response.Response
+//@Router /fans/what [get]
 func whatList(c *gin.Context) {
 	result, err := services.NewService().WhatList(c)
 	if err != nil {
@@ -25,6 +38,13 @@ func whatList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary what a user
+//@Tags what
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param id path string true "whatUserId"
+//@Router /fans/{id} [post]
 func whatUser(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -38,6 +58,13 @@ func whatUser(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary cancel what
+//@Tags what
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param id path string true "whatUserId"
+//@Router /fans/{id} [delete]
 func whatUserDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {

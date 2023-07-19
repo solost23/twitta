@@ -10,6 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//@Summary send tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param tweetCreateForm body forms.TweetCreateForm true "tweetCreateForm"
+//@Router /tweets [post]
 func tweetSend(c *gin.Context) {
 	params := &forms.TweetCreateForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -23,6 +30,13 @@ func tweetSend(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary tweet file upload
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param file formData file true "file"
+//@Router /tweets/static [post]
 func staticUpload(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -38,6 +52,13 @@ func staticUpload(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary delete tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param id path string true "tweetId"
+//@Router /tweets/{id} [delete]
 func tweetDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -51,6 +72,13 @@ func tweetDelete(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary tweet list
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} forms.TweetList
+//@Failure 400 {object} response.Response
+//@Param pageForm body utils.PageForm true "pageForm"
+//@Router /tweets [get]
 func tweetList(c *gin.Context) {
 	params := &utils.PageForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -71,6 +99,13 @@ func tweetList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary favorite tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param tweetFavoriteForm body forms.TweetFavoriteForm true "tweetFavoriteForm"
+//@Router /tweets/favorite [post]
 func tweetFavorite(c *gin.Context) {
 	params := &forms.TweetFavoriteForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
@@ -84,6 +119,13 @@ func tweetFavorite(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary cancel favorite tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} response.Response
+//@Failure 400 {object} response.Response
+//@Param id path string true "tweetId"
+//@Router /tweets/favorite/{id} [delete]
 func tweetFavoriteDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
 	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
@@ -97,6 +139,12 @@ func tweetFavoriteDelete(c *gin.Context) {
 	response.MessageSuccess(c, "成功", nil)
 }
 
+//@Summary favorite tweet list
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} forms.TweetList
+//@Failure 400 {object} response.Response
+//@Router /tweets/favorite [get]
 func tweetFavoriteList(c *gin.Context) {
 	result, err := services.NewService().TweetFavoriteList(c)
 	if err != nil {
@@ -106,6 +154,12 @@ func tweetFavoriteList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary user tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} forms.TweetList
+//@Failure 400 {object} response.Response
+//@Router /tweets/own [get]
 func tweetOwnList(c *gin.Context) {
 	result, err := services.NewService().TweetOwnList(c)
 	if err != nil {
@@ -115,6 +169,13 @@ func tweetOwnList(c *gin.Context) {
 	response.Success(c, result)
 }
 
+//@Summary search tweet
+//@Tags tweet
+//@Produce json
+//@Success 200 {object} forms.TweetList
+//@Failure 400 {object} response.Response
+//@Param searchForm body forms.SearchForm true "searchForm"
+//@Router /tweets/search [get]
 func tweetSearch(c *gin.Context) {
 	params := &forms.SearchForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {

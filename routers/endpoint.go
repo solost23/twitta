@@ -3,11 +3,12 @@ package routers
 import (
 	"net/http"
 
+	_ "twitta/docs"
+	"twitta/pkg/middlewares"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "twitta/docs"
-	"twitta/pkg/middlewares"
 )
 
 func SetRouters(r *gin.Engine) {
@@ -30,11 +31,11 @@ func SetRouters(r *gin.Engine) {
 		apiGroup.POST("face", face)
 
 		// 展示所有推文
-		apiGroup.GET("tweet", tweetList)
+		apiGroup.GET("tweets", tweetList)
 		// 用户搜索 - 采用全局搜索
-		apiGroup.GET("user/search", userSearch)
+		apiGroup.GET("users/search", userSearch)
 		// 推文搜索 - 采用全局搜索
-		apiGroup.GET("tweet/search", tweetSearch)
+		apiGroup.GET("tweets/search", tweetSearch)
 
 		// swagger
 		apiGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -60,7 +61,7 @@ func SetRouters(r *gin.Engine) {
 }
 
 func initAuthUserRouter(group *gin.RouterGroup) {
-	user := group.Group("user")
+	user := group.Group("users")
 	{
 		// 注销用户
 		user.POST("logout", logout)
@@ -72,7 +73,7 @@ func initAuthUserRouter(group *gin.RouterGroup) {
 }
 
 func initAuthTweetRouter(group *gin.RouterGroup) {
-	tweet := group.Group("tweet")
+	tweet := group.Group("tweets")
 	{
 		// 发送推文
 		tweet.POST("", tweetSend)
@@ -92,7 +93,7 @@ func initAuthTweetRouter(group *gin.RouterGroup) {
 }
 
 func initAuthFriendRouter(group *gin.RouterGroup) {
-	friend := group.Group("friend")
+	friend := group.Group("friends")
 	{
 		// 发送好友申请-朋友私信发送
 		friend.POST("", friendApplicationSend)
@@ -108,7 +109,7 @@ func initAuthFriendRouter(group *gin.RouterGroup) {
 }
 
 func initAuthChatRouter(group *gin.RouterGroup) {
-	chat := group.Group("chat")
+	chat := group.Group("chats")
 	{
 		// 聊天信息列表
 		chat.GET(":id", chatList)
@@ -116,7 +117,7 @@ func initAuthChatRouter(group *gin.RouterGroup) {
 }
 
 func initFansRouter(group *gin.RouterGroup) {
-	fan := group.Group("fan")
+	fan := group.Group("fans")
 	{
 		// 个人粉丝列表
 		fan.GET("", fanList)
@@ -130,7 +131,7 @@ func initFansRouter(group *gin.RouterGroup) {
 }
 
 func initCommentRouter(group *gin.RouterGroup) {
-	comment := group.Group("comment")
+	comment := group.Group("comments")
 	{
 		// 推文评论列表
 		comment.GET(":id", commentList)

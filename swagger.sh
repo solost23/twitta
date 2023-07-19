@@ -8,4 +8,4 @@ then
 fi
 
 echo "Running swag command"
-swag init -g cmd/main.go
+swag fmt && swag init -g cmd/main.go

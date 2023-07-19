@@ -7,25 +7,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"twitta/global"
+	"twitta/global/initialize"
+	"twitta/routers"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/go-cleanhttp"
 	"go.uber.org/zap"
-	"twitta/global"
-	"twitta/global/initialize"
-	"twitta/routers"
 )
-
-// @title twitta API
-// @version 1.0.0
-// @description twitta API documents
-
-// @contact.name twitta
-
-// @securityDefinitions.basic BasicAuth
-// @host localhost:6565
-// @BasePath /
-// @schemes http https
 
 var (
 	version  = "__BUILD_VERSION_"
@@ -41,6 +31,14 @@ func init() {
 	flag.Parse()
 }
 
+//	@title			twitta api
+//	@version		1.0.0
+//	@description	twitta api documents
+
+//	@securityDefinitions.basic	BasicAuth
+//	@host						localhost:6565
+//	@BasePath					/api/twitta
+//	@schemes					http https
 func main() {
 	if v || V {
 		fmt.Println(version)
