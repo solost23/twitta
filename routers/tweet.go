@@ -80,7 +80,7 @@ func tweetDelete(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.TweetList
 //@Failure 400 {object} response.Response
-//@Param pageForm body utils.PageForm true "pageForm"
+//@Param pageForm query utils.PageForm true "pageForm"
 //@Router /tweets [get]
 func tweetList(c *gin.Context) {
 	params := &utils.PageForm{}
@@ -181,7 +181,7 @@ func tweetOwnList(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.TweetList
 //@Failure 400 {object} response.Response
-//@Param searchForm body forms.SearchForm true "searchForm"
+//@Param searchForm query forms.SearchForm true "searchForm"
 //@Router /tweets/search [get]
 func tweetSearch(c *gin.Context) {
 	params := &forms.SearchForm{}

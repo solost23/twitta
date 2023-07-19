@@ -722,13 +722,14 @@ const docTemplate = `{
                 "summary": "tweet list",
                 "parameters": [
                     {
-                        "description": "pageForm",
-                        "name": "pageForm",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/utils.PageForm"
-                        }
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -949,13 +950,19 @@ const docTemplate = `{
                 "summary": "search tweet",
                 "parameters": [
                     {
-                        "description": "searchForm",
-                        "name": "searchForm",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/forms.SearchForm"
-                        }
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1110,13 +1117,19 @@ const docTemplate = `{
                 "summary": "search user",
                 "parameters": [
                     {
-                        "description": "searchForm",
-                        "name": "searchForm",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/forms.SearchForm"
-                        }
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1452,20 +1465,6 @@ const docTemplate = `{
                 }
             }
         },
-        "forms.SearchForm": {
-            "type": "object",
-            "properties": {
-                "keyword": {
-                    "type": "string"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "size": {
-                    "type": "integer"
-                }
-            }
-        },
         "forms.Tweet": {
             "type": "object",
             "properties": {
@@ -1628,17 +1627,6 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
-                }
-            }
-        },
-        "utils.PageForm": {
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer"
-                },
-                "size": {
-                    "type": "integer"
                 }
             }
         }

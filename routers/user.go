@@ -149,7 +149,7 @@ func userDetail(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.UserSearch
 //@Failure 400 {object} response.Response
-//@Param searchForm body forms.SearchForm true "searchForm"
+//@Param searchForm query forms.SearchForm true "searchForm"
 //@Router /users/search [get]
 func userSearch(c *gin.Context) {
 	params := &forms.SearchForm{}

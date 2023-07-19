@@ -182,15 +182,6 @@ definitions:
     - password
     - username
     type: object
-  forms.SearchForm:
-    properties:
-      keyword:
-        type: string
-      page:
-        type: integer
-      size:
-        type: integer
-    type: object
   forms.Tweet:
     properties:
       avatar:
@@ -298,13 +289,6 @@ definitions:
         type: string
       success:
         type: boolean
-    type: object
-  utils.PageForm:
-    properties:
-      page:
-        type: integer
-      size:
-        type: integer
     type: object
 host: localhost:6565
 info:
@@ -772,12 +756,12 @@ paths:
   /tweets:
     get:
       parameters:
-      - description: pageForm
-        in: body
-        name: pageForm
-        required: true
-        schema:
-          $ref: '#/definitions/utils.PageForm'
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
@@ -947,12 +931,15 @@ paths:
   /tweets/search:
     get:
       parameters:
-      - description: searchForm
-        in: body
-        name: searchForm
-        required: true
-        schema:
-          $ref: '#/definitions/forms.SearchForm'
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
@@ -1052,12 +1039,15 @@ paths:
   /users/search:
     get:
       parameters:
-      - description: searchForm
-        in: body
-        name: searchForm
-        required: true
-        schema:
-          $ref: '#/definitions/forms.SearchForm'
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
