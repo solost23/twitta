@@ -3,6 +3,8 @@ package routers
 import (
 	"net/http"
 
+	gcasbin "github.com/maxwellhertz/gin-casbin"
+
 	_ "twitta/docs"
 	"twitta/pkg/middlewares"
 
@@ -42,7 +44,7 @@ func SetRouters(r *gin.Engine) {
 	}
 	apiGroup.Use(
 		middlewares.JWTAuth(),
-		// middlewares.AuthCheckRole(),
+		middlewares.NewCasbinMiddleware().RequiresRoles([]string{"admin", "user"}, gcasbin.WithLogic(gcasbin.OR)),
 	)
 	{
 		// 用户相关

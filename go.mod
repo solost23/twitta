@@ -3,8 +3,6 @@ module twitta
 go 1.19
 
 require (
-	github.com/casbin/casbin/v2 v2.60.0
-	github.com/casbin/mongodb-adapter/v3 v3.4.1
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.9.0
@@ -16,6 +14,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.22.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
+	github.com/maxwellhertz/gin-casbin v1.0.0
 	github.com/mbobakov/grpc-consul-resolver v1.5.2
 	github.com/solost23/protopb/gen/go v0.0.0-20230607052419-b4f8dfa16e26
 	github.com/spf13/viper v1.12.0
@@ -62,6 +61,7 @@ require (
 	github.com/breml/errchkjson v0.3.1 // indirect
 	github.com/butuzov/ireturn v0.1.1 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
+	github.com/casbin/casbin v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/chavacava/garif v0.0.0-20230227094218-b8c73b2037b8 // indirect
@@ -100,7 +100,6 @@ require (
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/mock v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/golangci/check v0.0.0-20180506172741-cfe4005ccda2 // indirect

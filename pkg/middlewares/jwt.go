@@ -61,6 +61,8 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 		c.Set("user", redisUser)
+		c.Set("username", redisUser.Username)
+		//		c.Set("role", redisUser.Role)
 		c.Next()
 		return
 	}
