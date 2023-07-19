@@ -106,6 +106,7 @@ func logout(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param userUpdateForm body forms.UserUpdateForm true "userUpdateForm"
+//	@Param	token	header	string	true	"token"
 //@Router /users [put]
 func userUpdate(c *gin.Context) {
 	params := &forms.UserUpdateForm{}
@@ -126,6 +127,7 @@ func userUpdate(c *gin.Context) {
 //@Success 200 {object} forms.UserDetail
 //@Failure 400 {object} response.Response
 //@Param id path string true "userId"
+//	@Param	token	header	string	true	"token"
 //@Router /users/{id} [get]
 func userDetail(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}

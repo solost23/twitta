@@ -321,6 +321,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -343,6 +348,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -362,6 +372,11 @@ paths:
       - description: commentId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:
@@ -391,6 +406,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/forms.CommentInsertForm'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -411,6 +431,11 @@ paths:
       - description: commentId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:
@@ -434,6 +459,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -450,6 +480,12 @@ paths:
       - thumb
   /fans:
     get:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -470,6 +506,11 @@ paths:
       - description: whatUserId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:
@@ -493,6 +534,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -509,6 +555,12 @@ paths:
       - what
   /fans/what:
     get:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -525,6 +577,12 @@ paths:
       - what
   /friends:
     delete:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -540,6 +598,12 @@ paths:
       tags:
       - friend
     get:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -560,6 +624,11 @@ paths:
       - description: userId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:
@@ -584,6 +653,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -604,6 +678,11 @@ paths:
       - description: userId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:
@@ -721,6 +800,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/forms.TweetCreateForm'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -743,6 +827,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -759,6 +848,12 @@ paths:
       - tweet
   /tweets/favorite:
     get:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -781,6 +876,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/forms.TweetFavoriteForm'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -803,6 +903,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -819,6 +924,12 @@ paths:
       - tweet
   /tweets/own:
     get:
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -864,6 +975,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -887,6 +1003,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/forms.UserUpdateForm'
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -907,6 +1028,11 @@ paths:
       - description: userId
         in: path
         name: id
+        required: true
+        type: string
+      - description: token
+        in: header
+        name: token
         required: true
         type: string
       produces:

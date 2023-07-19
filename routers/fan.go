@@ -11,8 +11,9 @@ import (
 //	@Summary	fan list
 //	@Tags		fan
 //	@Produce	json
-//	@Success	200	{object}	forms.FansAndWhatResponse
-//	@Failure	400	{object}	response.Response
+//	@Success	200		{object}	forms.FansAndWhatResponse
+//	@Failure	400		{object}	response.Response
+//	@Param		token	header		string	true	"token"
 //	@Router		/fans [get]
 func fanList(c *gin.Context) {
 	result, err := services.NewService().FanList(c)
@@ -28,6 +29,7 @@ func fanList(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.FansAndWhatResponse
 //@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
 //@Router /fans/what [get]
 func whatList(c *gin.Context) {
 	result, err := services.NewService().WhatList(c)
@@ -44,6 +46,7 @@ func whatList(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "whatUserId"
+//	@Param	token	header	string	true	"token"
 //@Router /fans/{id} [post]
 func whatUser(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -64,6 +67,7 @@ func whatUser(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "whatUserId"
+//	@Param	token	header	string	true	"token"
 //@Router /fans/{id} [delete]
 func whatUserDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}

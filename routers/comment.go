@@ -15,6 +15,7 @@ import (
 //	@Success	200				{object}	forms.CommentList
 //	@Failure	400				{object}	response.Response
 //	@Param		id				path		string	true	"commentId"
+//	@Param		token			header		string	true	"token"
 //	@Router		/comments/{id}	[get]
 func commentList(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -46,9 +47,10 @@ func commentList(c *gin.Context) {
 //	@Summary	create thumb
 //	@Tags		thumb
 //	@Produce	json
-//	@Success	200	{object}	response.Response
-//	@Failure	400	{object}	response.Response
-//	@Param		id	path		string	true	"commentId"
+//	@Success	200		{object}	response.Response
+//	@Failure	400		{object}	response.Response
+//	@Param		id		path		string	true	"commentId"
+//	@Param		token	header		string	true	"token"
 //	@Router		/comments/{id}/thumb [post]
 func commentThumb(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -66,9 +68,10 @@ func commentThumb(c *gin.Context) {
 //	@Summary	delete thumb
 //	@Tags		thumb
 //	@Produce	json
-//	@Success	200	{object}	response.Response
-//	@Failure	400	{object}	response.Response
-//	@Param		id	path		string	true	"commentId"
+//	@Success	200		{object}	response.Response
+//	@Failure	400		{object}	response.Response
+//	@Param		id		path		string	true	"commentId"
+//	@Param		token	header		string	true	"token"
 //	@Router		/comments/{id}/thumb [delete]
 func commentThumbDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -90,6 +93,7 @@ func commentThumbDelete(c *gin.Context) {
 //	@Failure	400				{object}	response.Response
 //	@Param		id				path		string					true	"tweetId"
 //	@Param		commentInsert	body		forms.CommentInsertForm	true	"commentInsertForm"
+//	@Param		token			header		string					true	"token"
 //	@Router		/comments/{id} [post]
 func commentInsert(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -112,9 +116,10 @@ func commentInsert(c *gin.Context) {
 //	@Summary	delete comment
 //	@Tags		comment
 //	@Produce	json
-//	@Success	200	{object}	response.Response
-//	@Failure	400	{object}	response.Response
-//	@Param		id	path		string	true	"commentId"
+//	@Success	200		{object}	response.Response
+//	@Failure	400		{object}	response.Response
+//	@Param		id		path		string	true	"commentId"
+//	@Param		token	header		string	true	"token"
 //	@Router		/comments/{id} [delete]
 func commentDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}

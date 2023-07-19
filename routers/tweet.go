@@ -16,6 +16,7 @@ import (
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param tweetCreateForm body forms.TweetCreateForm true "tweetCreateForm"
+//	@Param	token	header	string	true	"token"
 //@Router /tweets [post]
 func tweetSend(c *gin.Context) {
 	params := &forms.TweetCreateForm{}
@@ -36,6 +37,7 @@ func tweetSend(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param file formData file true "file"
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/static [post]
 func staticUpload(c *gin.Context) {
 	file, err := c.FormFile("file")
@@ -58,6 +60,7 @@ func staticUpload(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "tweetId"
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/{id} [delete]
 func tweetDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -105,6 +108,7 @@ func tweetList(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param tweetFavoriteForm body forms.TweetFavoriteForm true "tweetFavoriteForm"
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/favorite [post]
 func tweetFavorite(c *gin.Context) {
 	params := &forms.TweetFavoriteForm{}
@@ -125,6 +129,7 @@ func tweetFavorite(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "tweetId"
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/favorite/{id} [delete]
 func tweetFavoriteDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -144,6 +149,7 @@ func tweetFavoriteDelete(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.TweetList
 //@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/favorite [get]
 func tweetFavoriteList(c *gin.Context) {
 	result, err := services.NewService().TweetFavoriteList(c)
@@ -159,6 +165,7 @@ func tweetFavoriteList(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.TweetList
 //@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
 //@Router /tweets/own [get]
 func tweetOwnList(c *gin.Context) {
 	result, err := services.NewService().TweetOwnList(c)

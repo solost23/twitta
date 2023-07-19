@@ -14,6 +14,7 @@ import (
 //@Produce json
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
 //@Router /friends [delete]
 func friendApplicationSend(c *gin.Context) {
 	params := &forms.FriendApplicationSendForm{}
@@ -35,6 +36,7 @@ func friendApplicationSend(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "userId"
+//	@Param	token	header	string	true	"token"
 //@Router /friends/{id}/accept [put]
 func friendApplicationAccept(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -56,6 +58,7 @@ func friendApplicationAccept(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "userId"
+//	@Param	token	header	string	true	"token"
 //@Router /friends/{id}/reject [put]
 func friendApplicationReject(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
@@ -76,6 +79,7 @@ func friendApplicationReject(c *gin.Context) {
 //@Produce json
 //@Success 200 {object} forms.FriendApplicationListResponse
 //@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
 //@Router /friends [get]
 func friendApplicationList(c *gin.Context) {
 	result, err := services.NewService().FriendApplicationList(c)
@@ -92,6 +96,7 @@ func friendApplicationList(c *gin.Context) {
 //@Success 200 {object} response.Response
 //@Failure 400 {object} response.Response
 //@Param id path string true "userId"
+//	@Param	token	header	string	true	"token"
 //@Router /friends/{id} [delete]
 func friendDelete(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}

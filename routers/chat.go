@@ -11,9 +11,10 @@ import (
 //	@Summary	chatList
 //	@Tags		chat
 //	@Produce	json
-//	@Success	200	{object}	forms.ChatList
-//	@Failure	400	{object}	response.Response
-//	@Param		id	path		string	true	"chatId"
+//	@Success	200		{object}	forms.ChatList
+//	@Failure	400		{object}	response.Response
+//	@Param		id		path		string	true	"chatId"
+//	@Param		token	header		string	true	"token"
 //	@Router		/chats/{id} [get]
 func chatList(c *gin.Context) {
 	UIdForm := &utils.UIdForm{}
