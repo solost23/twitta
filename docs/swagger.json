@@ -5,10 +5,10 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "Twitta API documents",
-        "title": "Twitta API",
+        "description": "twitta API documents",
+        "title": "twitta API",
         "contact": {
-            "name": "Twitta"
+            "name": "twitta"
         },
         "version": "1.0.0"
     },
@@ -60,22 +60,21 @@
         "forms.LoginForm": {
             "type": "object",
             "required": [
-                "device",
                 "password",
+                "platform",
                 "username"
             ],
             "properties": {
-                "device": {
-                    "type": "string",
-                    "enum": [
-                        "ios",
-                        "android",
-                        "web"
-                    ]
-                },
                 "password": {
                     "type": "string",
                     "minLength": 6
+                },
+                "platform": {
+                    "type": "string",
+                    "enum": [
+                        "twitta",
+                        "video_server"
+                    ]
                 },
                 "username": {
                     "type": "string"
@@ -98,6 +97,12 @@
                     "type": "integer"
                 },
                 "email": {
+                    "type": "string"
+                },
+                "faceEncoding": {
+                    "type": "string"
+                },
+                "faceImg": {
                     "type": "string"
                 },
                 "fansCount": {

@@ -8,4 +8,4 @@ then
 fi
 
 echo "Running swag command"
-swag init -g cmd/twitta/main.go
+swag init -g cmd/main.go

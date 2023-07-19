@@ -2,20 +2,19 @@ basePath: /
 definitions:
   forms.LoginForm:
     properties:
-      device:
-        enum:
-        - ios
-        - android
-        - web
-        type: string
       password:
         minLength: 6
+        type: string
+      platform:
+        enum:
+        - twitta
+        - video_server
         type: string
       username:
         type: string
     required:
-    - device
     - password
+    - platform
     - username
     type: object
   forms.LoginResponse:
@@ -29,6 +28,10 @@ definitions:
       disabled:
         type: integer
       email:
+        type: string
+      faceEncoding:
+        type: string
+      faceImg:
         type: string
       fansCount:
         type: integer
