@@ -5,6 +5,10 @@ time_location: "Asia/Shanghai"
 prometheus_enable: true
 config_path: api/twitta
 
+#consul:
+#  host: "localhost"
+#  port: "8500"
+
 mongo:
   hosts:
     - "localhost:27017"
@@ -19,22 +23,6 @@ redis:
 jwt:
   key: "ajgiengijheiganege"
   duration: 2678400
-
-#kafka:
-#  consumer:
-#    addrs:
-#      - "127.0.0.1:9093"
-#    topics:
-#      - "email"
-#  producer:
-#    addrs:
-#      - "127.0.0.1:9093"
-#    topics:
-#      - "email"
-
-consul:
-  host: "localhost"
-  port: "8500"
 
 static-oss:
   domain: "http://127.0.0.1:9000"

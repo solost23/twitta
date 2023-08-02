@@ -35,7 +35,7 @@ func getFile(filePath string) *os.File {
 			panic(err)
 		}
 	}
-	filePath = path.Join(filePath, time.Now().Format(time.DateOnly))
+	filePath = path.Join(filePath, time.Now().Format(time.DateOnly)+".log")
 	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
 		_, err = os.Create(filePath)
