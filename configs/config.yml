@@ -1,5 +1,5 @@
 name: "twitta"
-mode: "debug"
+#mode: "debug" 此参数通过设置环境变量GIN_MODE="value" GIN自动读取并设置
 port: 6565
 time_location: "Asia/Shanghai"
 prometheus_enable: true

@@ -6,17 +6,17 @@ import (
 	"path"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"twitta/global"
 )
 
 func InitLogger(filePath string) {
 	var logger *zap.Logger
-	switch global.ServerConfig.Mode {
-	case "debug":
+	switch gin.Mode() {
+	case gin.DebugMode:
 		logger, _ = zap.NewDevelopment()
-	case "release":
+	case gin.ReleaseMode:
 		logger, _ = zap.NewProduction(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 			return zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(getFile(filePath)), zapcore.DebugLevel)
 		}))

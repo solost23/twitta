@@ -2,13 +2,10 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"twitta/global"
 	"twitta/pkg/middlewares"
 )
 
 func Setup(app *gin.Engine) {
-	gin.SetMode(global.ServerConfig.Mode)
-
 	app.Use(middlewares.RequestLog())
 
 	// Debug for gin

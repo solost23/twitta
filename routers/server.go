@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"twitta/global"
+	"twitta/pkg/utils"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/consul/api"
 	"go.uber.org/zap"
-	"twitta/global"
-	"twitta/pkg/utils"
 )
 
 const (
@@ -24,7 +25,7 @@ func Run(client *api.Client, app *gin.Engine) {
 	serverConfig := global.ServerConfig
 	ip := "127.0.0.1"
 
-	if serverConfig.Mode != gin.DebugMode {
+	if gin.Mode() != gin.DebugMode {
 		ip, err = utils.GetInternalIP()
 		if err != nil {
 			zap.S().Panic("failed to get internal ip", err.Error())

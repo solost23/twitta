@@ -2,7 +2,6 @@ package configs
 
 type ServerConfig struct {
 	Name                  string              `mapstructure:"name"`
-	Mode                  string              `mapstructure:"mode"`
 	Addr                  string              `mapstructure:"addr"`
 	Port                  int                 `mapstructure:"port"`
 	TimeLocation          string              `mapstructure:"time_location"`
