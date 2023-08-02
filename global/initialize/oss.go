@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
-	"github.com/solost23/protopb/gen/go/protos/oss"
+	"github.com/solost23/protopb/gen/go/oss"
 	"google.golang.org/grpc"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -28,5 +28,5 @@ func InitOSSClient() {
 		panic(err)
 	}
 
-	global.OssSrvClient = oss.NewOssClient(cc)
+	global.OssSrvClient = oss.NewOSSServiceClient(cc)
 }

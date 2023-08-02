@@ -3,20 +3,21 @@ package initialize
 import (
 	"fmt"
 
+	"twitta/global"
+
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
-	face_recognition_service "github.com/solost23/protopb/gen/go/protos/face_recognition"
+	"github.com/solost23/protopb/gen/go/elastic"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"twitta/global"
 )
 
-func InitFaceRecognitionClient() {
+func InitESClient() {
 	cfg := api.DefaultConfig()
 	cfg.Address = fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port)
 
 	target := fmt.Sprintf("consul://%s:%d/%s",
-		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.FaceRecognitionConfig.Name)
+		global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port, global.ServerConfig.ESSrvConfig.Name)
 
 	cc, err := grpc.Dial(
 		target,
@@ -27,5 +28,5 @@ func InitFaceRecognitionClient() {
 		panic(err)
 	}
 
-	global.FaceRecognitionSrvClient = face_recognition_service.NewFaceRecognitionClient(cc)
+	global.EsSrvClient = elastic.NewSearchServiceClient(cc)
 }

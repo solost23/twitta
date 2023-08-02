@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/solost23/protopb/gen/go/protos/common"
-	"github.com/solost23/protopb/gen/go/protos/oss"
+	"github.com/solost23/protopb/gen/go/common"
+	"github.com/solost23/protopb/gen/go/oss"
 	"twitta/global"
 	"twitta/pkg/constants"
 	"twitta/pkg/utils"

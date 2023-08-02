@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/solost23/protopb/gen/go/protos/common"
-	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"twitta/global"
+
+	"github.com/solost23/protopb/gen/go/common"
+	es_service "github.com/solost23/protopb/gen/go/elastic"
 )
 
 // Save 将数据存入ES
@@ -24,9 +25,9 @@ func Save(ctx context.Context, index, id string, data any) error {
 	}
 	reply, err := global.EsSrvClient.Create(ctx, &es_service.CreateRequest{
 		Header: &common.RequestHeader{
-			Requester:   "",
-			OperatorUid: -1,
-			TraceId:     -1,
+			Requester:  "",
+			OperatorId: -1,
+			TraceId:    -1,
 		},
 		Index:      index,
 		DocumentId: id,

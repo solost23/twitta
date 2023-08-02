@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/solost23/protopb/gen/go/protos/common"
-	"github.com/solost23/protopb/gen/go/protos/push"
+	"github.com/solost23/protopb/gen/go/common"
+	"github.com/solost23/protopb/gen/go/push"
 	"twitta/global"
 )
 
@@ -16,8 +16,8 @@ func SendEmail(ctx context.Context, topic, username, addr, content string) error
 	}
 	reply, err := global.PushSrvClient.SendEmail(ctx, &push.SendEmailRequest{
 		Header: &common.RequestHeader{
-			TraceId:     6678677,
-			OperatorUid: 55,
+			TraceId:    6678677,
+			OperatorId: 55,
 		},
 		Email: &push.Email{
 			Topic:       topic,

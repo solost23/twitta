@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"time"
 
-	servantEs "twitta/services/servants/es"
+	es_service "github.com/solost23/protopb/gen/go/elastic"
+	servantElastic "twitta/services/servants/elastic"
 	servantPush "twitta/services/servants/push"
 	servantUser "twitta/services/servants/user"
 
-	"github.com/solost23/protopb/gen/go/protos/common"
-	es_service "github.com/solost23/protopb/gen/go/protos/es"
+	"github.com/solost23/protopb/gen/go/common"
 	"go.uber.org/zap"
 	"twitta/forms"
 	"twitta/global"
@@ -90,7 +90,7 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 
 	// 用户数据存入es
 	go func() {
-		if err = servantEs.Save(c, constants.ESCINDEXUSER, data.ID, data); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXUSER, data.ID, data); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -316,10 +316,10 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 	// 拿到id 更新es数据
 	// 删除 + 插入 = 更新
 	go func() {
-		if err = servantEs.Delete(c, constants.ESCINDEXUSER, user.ID); err != nil {
+		if err = servantElastic.Delete(c, constants.ESCINDEXUSER, user.ID); err != nil {
 			zap.S().Error(err)
 		}
-		if err = servantEs.Save(c, constants.ESCINDEXUSER, user.ID, user); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXUSER, user.ID, user); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -352,8 +352,8 @@ func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.Use
 
 	searchResult, err := global.EsSrvClient.Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
-			Requester:   "search_user",
-			OperatorUid: -1,
+			Requester:  "search_user",
+			OperatorId: -1,
 		},
 		ShouldQuery: &es_service.Query{
 			MultiMatchQueries: []*es_service.MultiMatchQuery{

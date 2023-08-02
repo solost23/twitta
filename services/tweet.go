@@ -6,8 +6,9 @@ import (
 	"mime/multipart"
 	"time"
 
-	"github.com/solost23/protopb/gen/go/protos/common"
-	es_service "github.com/solost23/protopb/gen/go/protos/es"
+	"github.com/solost23/protopb/gen/go/common"
+	es_service "github.com/solost23/protopb/gen/go/elastic"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"twitta/forms"
@@ -15,9 +16,7 @@ import (
 	"twitta/pkg/constants"
 	"twitta/pkg/models"
 	"twitta/pkg/utils"
-	servantEs "twitta/services/servants/es"
-
-	"go.mongodb.org/mongo-driver/bson"
+	servantElastic "twitta/services/servants/elastic"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +48,7 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 			Avatar   string `json:"avatar"`
 		}
 
-		if err = servantEs.Save(c, constants.ESCINDEXTWEET, data.ID, Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXTWEET, data.ID, Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -83,7 +82,7 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 	}
 
 	go func() {
-		if err = servantEs.Delete(c, constants.ESCINDEXTWEET, id); err != nil {
+		if err = servantElastic.Delete(c, constants.ESCINDEXTWEET, id); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -259,8 +258,8 @@ func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) (*forms.Tw
 
 	searchResult, err := global.EsSrvClient.Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
-			Requester:   "search_tweet",
-			OperatorUid: -1,
+			Requester:  "search_tweet",
+			OperatorId: -1,
 		},
 		ShouldQuery: &es_service.Query{
 			MultiMatchQueries: []*es_service.MultiMatchQuery{

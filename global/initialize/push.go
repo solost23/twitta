@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/consul/api"
 	_ "github.com/mbobakov/grpc-consul-resolver"
-	"github.com/solost23/protopb/gen/go/protos/push"
+	"github.com/solost23/protopb/gen/go/push"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"twitta/global"
@@ -27,5 +27,5 @@ func InitPushClient() {
 		panic(err)
 	}
 
-	global.PushSrvClient = push.NewPushClient(cc)
+	global.PushSrvClient = push.NewPushServiceClient(cc)
 }

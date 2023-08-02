@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/solost23/protopb/gen/go/protos/common"
-	es_service "github.com/solost23/protopb/gen/go/protos/es"
 	"twitta/global"
+
+	"github.com/solost23/protopb/gen/go/common"
+	es_service "github.com/solost23/protopb/gen/go/elastic"
 )
 
 // Delete 删除数据
@@ -19,9 +20,9 @@ func Delete(ctx context.Context, index, id string) error {
 	}
 	reply, err := global.EsSrvClient.Delete(ctx, &es_service.DeleteRequest{
 		Header: &common.RequestHeader{
-			Requester:   "",
-			OperatorUid: -1,
-			TraceId:     -1,
+			Requester:  "",
+			OperatorId: -1,
+			TraceId:    -1,
 		},
 		Index:      index,
 		DocumentId: id,
