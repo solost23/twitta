@@ -14,7 +14,7 @@ func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*fo
 
 	// 直接查询所有记录，并返回
 	filter := bson.M{
-		"type":      3,
+		"type":      models.LogPrivateLatterTypePrivateLatter,
 		"user_id":   bson.M{"$in": []string{user.ID, id}},
 		"target_id": bson.M{"$in": []string{user.ID, id}},
 	}

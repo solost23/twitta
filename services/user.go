@@ -223,7 +223,7 @@ func loginAndGetToken(ctx context.Context, platform string, user *models.User) (
 	if err != nil {
 		return "", err
 	}
-	rdb, err := cache.RedisConnFactory(10)
+	rdb, err := cache.RedisConnFactory(cache.TokenDB)
 	if err != nil {
 		return "", err
 	}
@@ -243,28 +243,10 @@ func loginAndGetToken(ctx context.Context, platform string, user *models.User) (
 	return token, nil
 }
 
-func (s *Service) Logout(c *gin.Context, params *forms.LogoutForm) error {
-	user := utils.GetUser(c)
-
-	rdb, err := cache.RedisConnFactory(10)
-	if err != nil {
-		return err
+func (s *Service) Logout(c *gin.Context) error {
+	if err := cache.Del(c, 10, c.GetString("token")+c.GetString("token")); err != nil {
+		zap.S().Error(err)
 	}
-	var redisPrefix string
-	switch *params.Platform {
-	case "twitta":
-		redisPrefix = constants.TwittaRedisPrefix
-	case "video_server":
-		redisPrefix = constants.VideoServerRedisPrefix
-	default:
-		return errors.New("暂不支持此平台类型登录")
-	}
-	key := redisPrefix + user.ID
-	token, err := rdb.Get(c, key).Result()
-	if err != nil {
-		return err
-	}
-	rdb.Del(c, redisPrefix+token)
 	return nil
 }
 

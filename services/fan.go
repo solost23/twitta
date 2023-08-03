@@ -21,19 +21,19 @@ func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 		return nil, err
 	}
 	userIds := make([]string, 0, len(fans))
-	for _, fan := range fans {
-		userIds = append(userIds, fan.UserId)
+	for i := 0; i != len(fans); i++ {
+		userIds = append(userIds, fans[i].UserId)
 	}
 	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
 	fansResponse := make([]*forms.FansAndWhatResponse, 0, len(users))
-	for _, user := range users {
+	for i := 0; i != len(users); i++ {
 		fansResponse = append(fansResponse, &forms.FansAndWhatResponse{
-			UserId:    user.ID,
-			Avatar:    user.Avatar,
-			Introduce: user.Introduce,
+			UserId:    users[i].ID,
+			Avatar:    utils.FulfillImageOSSPrefix(users[i].Avatar),
+			Introduce: users[i].Introduce,
 		})
 	}
 	return fansResponse, nil
@@ -46,12 +46,9 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 	userIds := make([]string, 0, len(fans))
-	for _, fan := range fans {
-		userIds = append(userIds, fan.UserId)
+	for i := 0; i != len(userIds); i++ {
+		userIds = append(userIds, fans[i].UserId)
 	}
 
 	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
@@ -59,11 +56,11 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 		return nil, err
 	}
 	whatsResponse := make([]*forms.FansAndWhatResponse, 0, len(users))
-	for _, user := range users {
+	for i := 0; i != len(users); i++ {
 		whatsResponse = append(whatsResponse, &forms.FansAndWhatResponse{
-			UserId:    user.ID,
-			Avatar:    user.Avatar,
-			Introduce: user.Introduce,
+			UserId:    users[i].ID,
+			Avatar:    utils.FulfillImageOSSPrefix(users[i].Avatar),
+			Introduce: users[i].Introduce,
 		})
 	}
 	return whatsResponse, nil

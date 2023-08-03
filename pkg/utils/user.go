@@ -7,5 +7,5 @@ import (
 )
 
 func GetUser(c *gin.Context) *models.User {
-	return c.Value("user").(*models.User)
+	return c.MustGet("user").(*models.User)
 }

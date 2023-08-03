@@ -33,7 +33,7 @@ func JWTAuth() gin.HandlerFunc {
 			response.Error(c, 1999, errors.New("无效 token"))
 			return
 		}
-		rdb, err := cache.RedisConnFactory(10)
+		rdb, err := cache.RedisConnFactory(cache.TokenDB)
 		if err != nil {
 			response.Error(c, 1999, err)
 			return
@@ -60,9 +60,10 @@ func JWTAuth() gin.HandlerFunc {
 			response.Error(c, 1999, err)
 			return
 		}
+
+		c.Set("platform", claims.Device)
 		c.Set("user", redisUser)
 		c.Set("username", redisUser.Username)
-		//		c.Set("role", redisUser.Role)
 		c.Next()
 		return
 	}

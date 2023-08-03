@@ -23,32 +23,24 @@ var (
 	st, v, V bool
 )
 
-func init() {
-	flag.StringVar(&execDir, "d", ".", "项目目录")
-	flag.BoolVar(&v, "v", false, "查看版本号")
-	flag.BoolVar(&V, "V", false, "查看版本号")
-	flag.BoolVar(&st, "s", false, "项目状态")
-	flag.Parse()
-}
-
 //	@title			twitta api
 //	@version		1.0.0
 //	@description	twitta api documents
 
-//	@securityDefinitions.basic	BasicAuth
-//	@host						localhost:6565
-//	@BasePath					/api/twitta
-//	@schemes					http https
+// @securityDefinitions.basic	BasicAuth
+// @host						localhost:6565
+// @BasePath					/api/twitta
+// @schemes					http https
 func main() {
 	if v || V {
 		fmt.Println(version)
-		os.Exit(-1)
+		return
 	}
 
 	initialize.Initialize(execDir)
 	// 初始化所需要的服务
-	initialize.InitESClient()
-	initialize.InitFaceRecognitionClient()
+	initialize.InitElasticClient()
+	initialize.InitRecognitionClient()
 	initialize.InitOSSClient()
 	initialize.InitPushClient()
 
@@ -83,4 +75,12 @@ func main() {
 			return
 		}
 	}
+}
+
+func init() {
+	flag.StringVar(&execDir, "d", ".", "项目目录")
+	flag.BoolVar(&v, "v", false, "查看版本号")
+	flag.BoolVar(&V, "V", false, "查看版本号")
+	flag.BoolVar(&st, "s", false, "项目状态")
+	flag.Parse()
 }

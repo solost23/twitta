@@ -28,10 +28,6 @@ type LoginResponse struct {
 	Token        string `json:"token"`
 }
 
-type LogoutForm struct {
-	Platform *string `json:"platform" comment:"平台" binding:"required,oneof=twitta video_server"`
-}
-
 type UserUpdateForm struct {
 	Username  string `json:"username"`
 	Nickname  string `json:"nickname"`
