@@ -264,7 +264,7 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		data["username"] = params.Username
 	}
 	if params.Nickname != "" {
-		data["nickname"] = bson.M{}
+		data["nickname"] = params.Nickname
 	}
 	if params.Avatar != "" {
 		data["avatar"] = utils.TrimDomainPrefix(params.Avatar)
