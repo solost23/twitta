@@ -9,7 +9,7 @@ const (
 	WebLogPath    = "logs"
 )
 
-// 初始化全局对象
+// Initialize 初始化全局对象
 func Initialize(execDir string) {
 	// 初始化配置
 	InitConfig(path.Join(execDir, WebConfigPath))

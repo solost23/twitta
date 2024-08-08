@@ -4,24 +4,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"twitta/forms"
+	"twitta/global"
 	"twitta/pkg/constants"
-	"twitta/pkg/models"
+	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 )
 
-func (*Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*forms.ChatList, error) {
+func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*forms.ChatList, error) {
 	user := utils.GetUser(c)
 
 	// 直接查询所有记录，并返回
-	filter := bson.M{
-		"type":      models.LogPrivateLatterTypePrivateLatter,
-		"user_id":   bson.M{"$in": []string{user.ID, id}},
-		"target_id": bson.M{"$in": []string{user.ID, id}},
+	query := bson.M{
+		"type":      dao.LogPrivateLatterTypePrivateLatter,
+		"user_id":   bson.M{"$in": []string{user.ID.String(), id}},
+		"target_id": bson.M{"$in": []string{user.ID.String(), id}},
 	}
-	logPrivateLatters, total, pages, err := models.GPaginatorOrder[models.LogPrivateLatter](c, (&models.LogPrivateLatter{}).Conn(), &models.ListPageInput{
+	db := global.DB
+	logPrivateLatters, total, pages, err := dao.GPaginatorOrder[*dao.LogPrivateLatter](c, db, &dao.ListPageInput{
 		Page: params.Page,
 		Size: params.Size,
-	}, "", filter)
+	}, bson.M{"_id": 1}, query)
 	if err != nil {
 		return nil, err
 	}

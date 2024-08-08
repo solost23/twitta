@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"mime/multipart"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"twitta/forms"
 	"twitta/global"
 	"twitta/pkg/constants"
-	"twitta/pkg/models"
+	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 	servantElastic "twitta/services/servants/elastic"
 
@@ -23,19 +24,18 @@ import (
 
 func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 	user := utils.GetUser(c)
-	data := &models.Tweet{
-		BaseModel: models.BaseModel{
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		},
-		ID:           utils.UUID(),
-		UserID:       user.ID,
+	data := dao.Tweet{
+		ID:           primitive.NewObjectID(),
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+		UserID:       user.ID.String(),
 		Title:        params.Title,
 		Content:      params.Content,
 		ThumbCount:   0,
 		CommentCount: 0,
 	}
-	_, err := models.GInsertOne[models.User](c, (&models.Tweet{}).Conn(), data)
+	db := global.DB
+	err := dao.GInsertOne[*dao.Tweet](c, db, &data)
 	if err != nil {
 		return err
 	}
@@ -43,12 +43,12 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 	go func() {
 		// 推文携带创建者信息，方便后续直接搜索展示
 		type Document struct {
-			*models.Tweet
+			*dao.Tweet
 			Username string `json:"username"`
 			Avatar   string `json:"avatar"`
 		}
 
-		if err = servantElastic.Save(c, constants.ESCINDEXTWEET, data.ID, Document{Tweet: data, Username: user.Username, Avatar: user.Avatar}); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXTWEET, data.ID.String(), Document{Tweet: &data, Username: user.Username, Avatar: user.Avatar}); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -69,14 +69,15 @@ func (s *Service) StaticUpload(c *gin.Context, file *multipart.FileHeader) (stri
 func (*Service) TweetDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
-	tweet, err := models.GWhereFirst[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": id})
+	db := global.DB
+	tweet, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
-	if user.ID != tweet.UserID {
+	if user.ID.String() != tweet.UserID {
 		return errors.New("本推文所属用户不是您，无权删除")
 	}
-	_, err = models.GWhereDelete[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": id})
+	_, err = dao.GWhereDelete[*dao.Tweet](c, db, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,8 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 }
 
 func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetList, error) {
-	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{})
+	db := global.DB
+	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{})
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +101,7 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 	for _, tweet := range tweets {
 		userIds = append(userIds, tweet.UserID)
 	}
-	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +110,7 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 		Avatar   string
 	}, len(users))
 	for _, user := range users {
-		userIdToInfoMaps[user.ID] = struct {
+		userIdToInfoMaps[user.ID.String()] = struct {
 			Username string
 			Avatar   string
 		}{Username: user.Username, Avatar: user.Avatar}
@@ -120,7 +122,7 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 			UserId:       tweet.UserID,
 			Username:     userIdToInfoMaps[tweet.UserID].Username,
 			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			ID:           tweet.ID,
+			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
 			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
@@ -137,17 +139,18 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 	user := utils.GetUser(c)
 
-	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"user_id": user.ID})
+	db := global.DB
+	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"user_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
 	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
 		records = append(records, &forms.Tweet{
-			UserId:       user.ID,
+			UserId:       user.ID.String(),
 			Username:     user.Username,
 			Avatar:       user.Avatar,
-			ID:           tweet.ID,
+			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
 			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
@@ -165,7 +168,8 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	user := utils.GetUser(c)
 
-	favorites, err := models.GWhereFind[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID})
+	db := global.DB
+	favorites, err := dao.GWhereFind[*dao.Favorite](c, db, bson.M{"user_id": user.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +177,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	for _, favorite := range favorites {
 		tweetIds = append(tweetIds, favorite.TweetId)
 	}
-	tweets, err := models.GWhereFind[models.Tweet](c, (&models.Tweet{}).Conn(), bson.M{"_id": bson.M{"$in": tweetIds}})
+	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"_id": bson.M{"$in": tweetIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +185,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	for _, tweet := range tweets {
 		userIds = append(userIds, tweet.UserID)
 	}
-	users, err := models.GWhereFind[models.User](c, (&models.User{}).Conn(), bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +194,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 		Avatar   string
 	}, len(users))
 	for _, user := range users {
-		userIdToInfoMaps[user.ID] = struct {
+		userIdToInfoMaps[user.ID.String()] = struct {
 			Username string
 			Avatar   string
 		}{Username: user.Username, Avatar: user.Avatar}
@@ -202,7 +206,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 			UserId:       tweet.UserID,
 			Username:     userIdToInfoMaps[tweet.UserID].Username,
 			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			ID:           tweet.ID,
+			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
 			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
@@ -221,23 +225,22 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 	user := utils.GetUser(c)
 
 	// 查询此用户有无收藏此文章
-	_, err := models.GWhereFirst[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID, "tweet_id": params.Id})
+	db := global.DB
+	_, err := dao.GWhereFirst[*dao.Favorite](c, db, bson.M{"user_id": user.ID, "tweet_id": params.Id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
 	if err == nil {
 		return errors.New("您已收藏此推文")
 	}
-	data := &models.Favorite{
-		ID: utils.UUID(),
-		BaseModel: models.BaseModel{
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		},
-		UserId:  user.ID,
-		TweetId: params.Id,
+	data := &dao.Favorite{
+		ID:        primitive.NewObjectID(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserId:    user.ID.String(),
+		TweetId:   params.Id,
 	}
-	_, err = models.GInsertOne[models.Favorite](c, (&models.Favorite{}).Conn(), data)
+	err = dao.GInsertOne[*dao.Favorite](c, db, data)
 	if err != nil {
 		return err
 	}
@@ -247,7 +250,8 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
-	_, err := models.GWhereDelete[models.Favorite](c, (&models.Favorite{}).Conn(), bson.M{"user_id": user.ID, "_id": id})
+	db := global.DB
+	_, err := dao.GWhereDelete[*dao.Favorite](c, db, bson.M{"user_id": user.ID, "_id": id})
 	if err != nil {
 		return err
 	}

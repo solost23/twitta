@@ -1,6 +1,9 @@
-package models
+package dao
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 const (
 	LogPrivateLatterTypeAcceptOrReject = iota
@@ -10,12 +13,14 @@ const (
 )
 
 type LogPrivateLatter struct {
-	BaseModel
-	ID       string `json:"id" bson:"_id"`
-	UserId   string `json:"userId" bson:"user_id"`
-	TargetId string `json:"targetId" bson:"target_id"`
-	Content  string `json:"content" bson:"content"`
-	Type     uint   `json:"type" bson:"type" comment:"是否通过好友 0 接受/拒绝 1 接受 2 拒绝 3 朋友私信内容"`
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	CreatedAt time.Time          `json:"createdAt" bson:"created_at,omitempty"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at,omitempty"`
+	DeletedAt time.Time          `json:"deletedAt" bson:"deleted_at,omitempty"`
+	UserId    string             `json:"userId" bson:"user_id,omitempty" comment:"用户 ID"`
+	TargetId  string             `json:"targetId" bson:"target_id,omitempty" comment:"目标 ID"`
+	Content   string             `json:"content" bson:"content,omitempty" comment:"私信内容"`
+	Type      uint               `json:"type" bson:"type,omitempty" comment:"是否通过好友 0 接受/拒绝 1 接受 2 拒绝 3 朋友私信内容"`
 }
 
 //	func NewLogPrivateLatter() *LogPrivateLatter {
@@ -84,6 +89,6 @@ func (*LogPrivateLatter) TableName() string {
 //	return count, nil
 // }
 
-func (m *LogPrivateLatter) Conn() *mongo.Collection {
-	return NewCollection(m.TableName()).Build()
-}
+//func (m *LogPrivateLatter) Conn() *mongo.Collection {
+//	return NewCollection(m.TableName()).Build()
+//}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -21,8 +22,8 @@ import (
 	"twitta/global"
 	"twitta/pkg/cache"
 	"twitta/pkg/constants"
+	"twitta/pkg/dao"
 	"twitta/pkg/middlewares"
-	"twitta/pkg/models"
 	"twitta/pkg/utils"
 
 	"github.com/golang-jwt/jwt"
@@ -35,7 +36,8 @@ import (
 )
 
 func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
-	_, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"username": params.Username})
+	db := global.DB
+	_, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -64,12 +66,10 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		}
 	}
 
-	data := &models.User{
-		BaseModel: models.BaseModel{
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		},
-		ID:           utils.UUID(),
+	data := dao.User{
+		ID:           primitive.NewObjectID(),
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 		Username:     params.Username,
 		Password:     utils.NewMd5(params.Password, constants.Secret),
 		Nickname:     params.Nickname,
@@ -83,14 +83,14 @@ func (s *Service) Register(c *gin.Context, params *forms.RegisterForm) error {
 		FaceImg:      utils.TrimDomainPrefix(faceImg),
 		FaceEncoding: faceEncoding,
 	}
-	_, err = models.GInsertOne[models.User](c, (&models.User{}).Conn(), data)
+	err = dao.GInsertOne[*dao.User](c, db, &data)
 	if err != nil {
 		return err
 	}
 
 	// 用户数据存入es
 	go func() {
-		if err = servantElastic.Save(c, constants.ESCINDEXUSER, data.ID, data); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXUSER, data.ID.String(), data); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -120,9 +120,13 @@ func (s *Service) UploadAvatar(c *gin.Context, file *multipart.FileHeader) (stri
 
 // Login 可以抽出来做成一个Http服务多平台登录
 func (s *Service) Login(c *gin.Context, params *forms.LoginForm) (*forms.LoginResponse, error) {
-	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"username": params.Username})
+	db := global.DB
+	user, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"username": params.Username})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
+	}
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, errors.New("用户名不存在")
 	}
 	if params.Username != user.Username || utils.NewMd5(params.Password, constants.Secret) != user.Password {
 		return nil, errors.New("用户名或密码错误")
@@ -168,7 +172,8 @@ func (s *Service) Face(c *gin.Context, file *multipart.FileHeader) (*forms.Face,
 	if !isFound {
 		return result, nil
 	}
-	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": userId})
+	db := global.DB
+	user, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": userId})
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +194,7 @@ func (s *Service) Face(c *gin.Context, file *multipart.FileHeader) (*forms.Face,
 	return result, nil
 }
 
-func loginAndGetToken(ctx context.Context, platform string, user *models.User) (string, error) {
+func loginAndGetToken(ctx context.Context, platform string, user *dao.User) (string, error) {
 	if user.Disabled == 1 {
 		return "", errors.New("您的账户已被禁用，请联系管理员")
 	}
@@ -205,7 +210,7 @@ func loginAndGetToken(ctx context.Context, platform string, user *models.User) (
 	}
 
 	claims := middlewares.CustomClaims{
-		UserId: user.ID,
+		UserId: user.ID.String(),
 		Device: redisPrefix,
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix(),
@@ -228,14 +233,15 @@ func loginAndGetToken(ctx context.Context, platform string, user *models.User) (
 		return "", err
 	}
 
-	key := redisPrefix + user.ID
+	key := redisPrefix + user.ID.String()
 	oldToken, err := rdb.Get(ctx, key).Result()
 
 	rdb.Del(ctx, redisPrefix+oldToken)
 	rdb.Set(ctx, key, token, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 	rdb.Set(ctx, redisPrefix+token, userJson, time.Duration(global.ServerConfig.JWTConfig.Duration)*time.Second)
 
-	_, err = models.GWhereUpdate[models.User](ctx, (&models.User{}).Conn(), bson.M{"_id": user.ID}, bson.D{{"$set", bson.D{{"last_login_time", time.Now()}}}})
+	db := global.DB
+	_, err = dao.GWhereUpdate[*dao.User](ctx, db, bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"last_login_time": time.Now()}})
 	if err != nil {
 		return "", err
 	}
@@ -286,11 +292,12 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 		}
 	}
 	update := bson.M{"$set": data}
-	_, err := models.GWhereUpdate[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID}, update)
+	db := global.DB
+	_, err := dao.GWhereUpdate[*dao.User](c, db, bson.M{"_id": user.ID}, update)
 	if err != nil {
 		return err
 	}
-	user, err = models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": user.ID})
+	user, err = dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": user.ID})
 	if err != nil {
 		return err
 	}
@@ -298,10 +305,10 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 	// 拿到id 更新es数据
 	// 删除 + 插入 = 更新
 	go func() {
-		if err = servantElastic.Delete(c, constants.ESCINDEXUSER, user.ID); err != nil {
+		if err = servantElastic.Delete(c, constants.ESCINDEXUSER, user.ID.String()); err != nil {
 			zap.S().Error(err)
 		}
-		if err = servantElastic.Save(c, constants.ESCINDEXUSER, user.ID, user); err != nil {
+		if err = servantElastic.Save(c, constants.ESCINDEXUSER, user.ID.String(), user); err != nil {
 			zap.S().Error(err)
 		}
 	}()
@@ -310,7 +317,8 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 }
 
 func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
-	user, err := models.GWhereFirst[models.User](c, (&models.User{}).Conn(), bson.M{"_id": id})
+	db := global.DB
+	user, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
@@ -318,7 +326,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error)
 		return nil, errors.New(fmt.Sprintf("不存在此用户"))
 	}
 	userDetailResponse := &forms.UserDetail{
-		UserId:      user.ID,
+		UserId:      user.ID.String(),
 		Username:    user.Username,
 		Nickname:    user.Nickname,
 		Avatar:      utils.FulfillImageOSSPrefix(user.Avatar),
@@ -331,7 +339,6 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error)
 }
 
 func (*Service) UserSearch(c *gin.Context, params *forms.SearchForm) (*forms.UserSearch, error) {
-
 	searchResult, err := global.EsSrvClient.Search(c, &es_service.SearchRequest{
 		Header: &common.RequestHeader{
 			Requester:  "search_user",

@@ -21,3 +21,8 @@
 ```shell
 docker-compose up -d
 ```
+
+# Swagger
+```shell
+http://localhost:6565/api/twitta/swagger/index.html
+```

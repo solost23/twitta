@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	DB                       *mongo.Client
+	DB                       *mongo.Database
 	Loc                      *time.Location
 	ServerConfig             = &configs.ServerConfig{}
 	RedisMapPool             = make(map[int]*redis.Client)

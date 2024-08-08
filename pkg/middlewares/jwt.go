@@ -7,7 +7,7 @@ import (
 
 	"twitta/global"
 	"twitta/pkg/cache"
-	"twitta/pkg/models"
+	"twitta/pkg/dao"
 	"twitta/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -54,7 +54,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		redisUser := &models.User{}
+		redisUser := &dao.User{}
 		err = json.Unmarshal([]byte(jsonUser), redisUser)
 		if err != nil {
 			response.Error(c, 1999, err)

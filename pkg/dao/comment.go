@@ -1,6 +1,9 @@
-package models
+package dao
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 const (
 	CommentTypeThumb = iota
@@ -8,18 +11,17 @@ const (
 )
 
 type Comment struct {
-	BaseModel
-	ID      string `json:"id" bson:"_id"`
-	UserId  string `json:"userId" bson:"user_id"`
-	TweetId string `json:"tweetId" bson:"tweet_id"`
-	Content string `json:"content" bson:"content"`
-	Parent  string `json:"parent" bson:"parent"`
-	Type    uint   `json:"type" bson:"type" comment:"评论类型 0: 点赞 1: 评论"`
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	CreatedAt time.Time          `json:"createdAt" bson:"created_at,omitempty"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at,omitempty"`
+	DeletedAt time.Time          `json:"deletedAt" bson:"deleted_at,omitempty"`
+	UserId    string             `json:"userId" bson:"user_id,omitempty" comment:"用户 ID"`
+	TweetId   string             `json:"tweetId" bson:"tweet_id,omitempty" comment:"推文 ID"`
+	Content   string             `json:"content" bson:"content,omitempty" comment:"推文内容"`
+	ParentId  string             `json:"parent" bson:"parent,omitempty" comment:"父节点 ID"`
+	Type      uint               `json:"type" bson:"type,omitempty" comment:"评论类型 0: 点赞 1: 评论"`
 }
 
-//	func NewComment() *Comment {
-//		return &Comment{}
-//	}
 func (*Comment) TableName() string {
 	return "fans"
 }
@@ -82,7 +84,3 @@ func (*Comment) TableName() string {
 //	}
 //	return count, nil
 // }
-
-func (m *Comment) Conn() *mongo.Collection {
-	return NewCollection(m.TableName()).Build()
-}

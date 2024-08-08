@@ -1,7 +1,7 @@
 package forms
 
 import (
-	"twitta/pkg/models"
+	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 )
 
@@ -23,7 +23,7 @@ type LoginForm struct {
 }
 
 type LoginResponse struct {
-	models.User
+	dao.User
 	IsFirstLogin uint   `json:"isFirstLogin"`
 	Token        string `json:"token"`
 }
@@ -53,7 +53,7 @@ type UserSearch struct {
 }
 
 type Face struct {
-	models.User
+	dao.User
 	IsFirstLogin uint   `json:"isFirstLogin"`
 	Token        string `json:"token"`
 	IsFound      bool   `json:"isFound"`

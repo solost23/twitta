@@ -23,6 +23,7 @@ type MongoConf struct {
 	AuthSource string   `mapstructure:"auth_source"`
 	Username   string   `mapstructure:"username"`
 	Password   string   `mapstructure:"password"`
+	DB         string   `mapstructure:"db"`
 	Timeout    int      `mapstructure:"timeout"`
 }
 

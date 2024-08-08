@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/http"
 	"twitta/global/initialize"
-	"twitta/pkg/models"
+	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 )
 
@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 
 func TestServiceTweetList(t *testing.T) {
 	ginCtx, _ := gin.CreateTestContext(&http.TestResponseWriter{})
-	ginCtx.Set("user", &models.User{})
+	ginCtx.Set("user", &dao.User{})
 	type arg struct {
 		ctx *gin.Context
 	}

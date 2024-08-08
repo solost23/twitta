@@ -1,29 +1,29 @@
-package models
+package dao
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
-
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// 定义基本模型，对数据进行增删改查时结构可以变动
 type User struct {
-	BaseModel
-	ID            string    `json:"id" bson:"_id"`
-	Username      string    `json:"username" bson:"username"`
-	Password      string    `json:"password" bson:"password"`
-	Nickname      string    `json:"nickname" bson:"nickname"`
-	Mobile        string    `json:"mobile" bson:"mobile"`
-	Role          string    `json:"role" bson:"role"`
-	Avatar        string    `json:"avatar" bson:"avatar"`
-	Introduce     string    `json:"introduce" bson:"introduce"`
-	Email         string    `json:"email" bson:"email"`
-	FansCount     int64     `json:"fansCount" bson:"fans_count" comment:"关注数"`
-	WechatCount   int64     `json:"wechatCount" bson:"wechat_count" comment:"关注数"`
-	LastLoginTime time.Time `json:"lastLoginTime" bson:"last_login_time" comment:"用户最近登陆时间"`
-	Disabled      uint      `json:"disabled" bson:"disabled" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
-	FaceImg       string    `json:"faceImg" bson:"face_img" comment:"用户人脸"`
-	FaceEncoding  string    `json:"faceEncoding" bson:"face_encoding" comment:"用户人脸编码"`
+	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	CreatedAt     time.Time          `json:"createdAt" bson:"created_at,omitempty"`
+	UpdatedAt     time.Time          `json:"updatedAt" bson:"updated_at,omitempty"`
+	DeletedAt     time.Time          `json:"deletedAt" bson:"deleted_at,omitempty"`
+	Username      string             `json:"username" bson:"username,omitempty" comment:"用户名"`
+	Password      string             `json:"password" bson:"password,omitempty" comment:"密码"`
+	Nickname      string             `json:"nickname" bson:"nickname,omitempty" comment:"昵称"`
+	Mobile        string             `json:"mobile" bson:"mobile,omitempty" comment:"手机"`
+	Role          string             `json:"role" bson:"role,omitempty" comment:"角色"`
+	Avatar        string             `json:"avatar" bson:"avatar,omitempty" comment:"头像"`
+	Introduce     string             `json:"introduce" bson:"introduce,omitempty" comment:"介绍"`
+	Email         string             `json:"email" bson:"email,omitempty" comment:"邮箱"`
+	FansCount     int64              `json:"fansCount" bson:"fans_count,omitempty" comment:"关注数"`
+	WechatCount   int64              `json:"wechatCount" bson:"wechat_count,omitempty" comment:"关注数"`
+	LastLoginTime time.Time          `json:"lastLoginTime" bson:"last_login_time,omitempty" comment:"用户最近登陆时间"`
+	Disabled      uint               `json:"disabled" bson:"disabled,omitempty" comment:"是否禁用用户 0: 非禁用 1: 禁用"`
+	FaceImg       string             `json:"faceImg" bson:"face_img,omitempty" comment:"用户人脸"`
+	FaceEncoding  string             `json:"faceEncoding" bson:"face_encoding,omitempty" comment:"用户人脸编码"`
 }
 
 func (*User) TableName() string {
@@ -89,6 +89,6 @@ func (*User) TableName() string {
 //	return count, nil
 // }
 
-func (m *User) Conn() *mongo.Collection {
-	return NewCollection(m.TableName()).Build()
-}
+//func (m *User) Conn() *mongo.Collection {
+//	return NewCollection(m.TableName()).Build()
+//}

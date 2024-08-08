@@ -1,15 +1,20 @@
-package models
+package dao
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 type Tweet struct {
-	BaseModel
-	ID           string `json:"id" bson:"_id"`
-	UserID       string `json:"userId" bson:"user_id"`
-	Title        string `json:"title" bson:"title"`
-	Content      string `json:"content" bson:"content"`
-	ThumbCount   int64  `json:"thumbCount" bson:"thumb_count"`
-	CommentCount int64  `json:"commentCount" bson:"comment_count"`
+	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	CreatedAt    time.Time          `json:"createdAt" bson:"created_at,omitempty"`
+	UpdatedAt    time.Time          `json:"updatedAt" bson:"updated_at,omitempty"`
+	DeletedAt    time.Time          `json:"deletedAt" bson:"deleted_at,omitempty"`
+	UserID       string             `json:"userId" bson:"user_id,omitempty" comment:"用户 ID"`
+	Title        string             `json:"title" bson:"title,omitempty" comment:"标题"`
+	Content      string             `json:"content" bson:"content,omitempty" comment:"内容"`
+	ThumbCount   int64              `json:"thumbCount" bson:"thumb_count,omitempty" comment:"点赞数"`
+	CommentCount int64              `json:"commentCount" bson:"comment_count,omitempty" comment:"评论数"`
 }
 
 //	func NewTweet() *Tweet {
@@ -78,6 +83,6 @@ func (*Tweet) TableName() string {
 //	return count, nil
 // }
 
-func (m *Tweet) Conn() *mongo.Collection {
-	return NewCollection(m.TableName()).Build()
-}
+//func (m *Tweet) Conn() *mongo.Collection {
+//	return NewCollection(m.TableName()).Build()
+//}

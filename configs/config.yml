@@ -15,6 +15,7 @@ mongo:
   auth_source: ""
   username: ""
   password: ""
+  db: "twitta"
   timeout: 30
 
 redis:

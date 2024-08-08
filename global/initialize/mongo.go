@@ -13,7 +13,7 @@ func InitMongo() {
 		return
 	}
 	var err error
-	global.DB, err = mongoos.NewMongoConnect(context.Background(), &mongoos.Config{
+	client, err := mongoos.NewMongoConnect(context.Background(), &mongoos.Config{
 		Hosts:      global.ServerConfig.MongoConfig.Hosts,
 		AuthSource: global.ServerConfig.MongoConfig.AuthSource,
 		Username:   global.ServerConfig.MongoConfig.Username,
@@ -23,4 +23,5 @@ func InitMongo() {
 	if err != nil {
 		panic(err)
 	}
+	global.DB = client.Database(global.ServerConfig.MongoConfig.DB)
 }

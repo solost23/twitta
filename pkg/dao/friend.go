@@ -1,12 +1,17 @@
-package models
+package dao
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 type Friend struct {
-	BaseModel
-	ID       string `json:"id" bson:"_id"`
-	UserId   string `json:"userId" bson:"user_id"`
-	FriendId string `json:"friendId" bson:"friend_id"`
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	CreatedAt time.Time          `json:"createdAt" bson:"created_at,omitempty"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updated_at,omitempty"`
+	DeletedAt time.Time          `json:"deletedAt" bson:"deleted_at,omitempty"`
+	UserId    string             `json:"userId" bson:"user_id,omitempty" comment:"用户 ID"`
+	FriendId  string             `json:"friendId" bson:"friend_id,omitempty" comment:"好友 ID"`
 }
 
 //	func NewFriend() *Friend {
@@ -75,6 +80,6 @@ func (*Friend) TableName() string {
 //	return count, nil
 // }
 
-func (m *Friend) Conn() *mongo.Collection {
-	return NewCollection(m.TableName()).Build()
-}
+//func (m *Friend) Conn() *mongo.Collection {
+//	return NewCollection(m.TableName()).Build()
+//}
