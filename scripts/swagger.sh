@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if ! command -v swag &> /dev/null
 then

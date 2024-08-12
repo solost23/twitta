@@ -18,11 +18,21 @@
 - [x] GRpc服务
 
 # Quick Start
-```shell
+## Docker
+```bash
 docker-compose up -d
+```
+## Local
+```bash
+make run
 ```
 
 # Swagger
-```shell
+## Generate
+```bash
+make swagger
+```
+## Url
+```bash
 http://localhost:6565/api/twitta/swagger/index.html
 ```
