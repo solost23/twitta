@@ -3,9 +3,9 @@ package services
 import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"time"
 	"twitta/forms"
 	"twitta/global"
-	"twitta/pkg/constants"
 	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 )
@@ -30,7 +30,7 @@ func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*
 
 	records := make([]*forms.Chat, 0, len(logPrivateLatters))
 	for i := 0; i < cap(records); i++ {
-		createdAt := logPrivateLatters[i].CreatedAt.Format(constants.TimeFormat)
+		createdAt := logPrivateLatters[i].CreatedAt.Format(time.DateTime)
 		records = append(records, &forms.Chat{
 			UserId:    &logPrivateLatters[i].UserId,
 			Msg:       &logPrivateLatters[i].Content,

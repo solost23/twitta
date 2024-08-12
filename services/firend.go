@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"twitta/forms"
-	"twitta/pkg/constants"
 	"twitta/pkg/dao"
 	"twitta/pkg/utils"
 )
@@ -51,7 +50,7 @@ func (*Service) FriendApplicationList(c *gin.Context) ([]*forms.FriendApplicatio
 			Avatar:    userIdToInfoMaps[logPrivateLatter.UserId].Avatar,
 			Content:   logPrivateLatter.Content,
 			Type:      logPrivateLatter.Type,
-			CreatedAt: logPrivateLatter.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt: logPrivateLatter.CreatedAt.Format(time.DateTime),
 		})
 	}
 	return result, nil

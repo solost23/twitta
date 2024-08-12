@@ -125,7 +125,7 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
@@ -153,7 +153,7 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
@@ -209,7 +209,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
-			CreatedAt:    tweet.CreatedAt.Format(constants.TimeFormat),
+			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})

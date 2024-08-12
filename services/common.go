@@ -14,7 +14,6 @@ import (
 	"github.com/solost23/protopb/gen/go/common"
 	"github.com/solost23/protopb/gen/go/oss"
 	"twitta/global"
-	"twitta/pkg/constants"
 	"twitta/pkg/utils"
 )
 
@@ -60,7 +59,7 @@ func uploadImgOrVidBytes(userId uint, folderName string, postFileName string, fi
 	}
 
 	filename := utils.NewMd5(
-		time.Now().Format(constants.DateFormat)+
+		time.Now().Format(time.DateOnly)+
 			fmt.Sprintf("%d", userId)+
 			utils.NewMd5(string(fileBytes))+
 			postFileName) + path.Ext(postFileName)

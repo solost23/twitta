@@ -4,23 +4,21 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
-	"twitta/pkg/constants"
-
-	"github.com/gin-gonic/gin"
 )
 
 type JSONTime time.Time
 
 func (j JSONTime) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%s", time.Time(j).Format(constants.TimeFormat))), nil
+	return []byte(fmt.Sprintf("%s", time.Time(j).Format(time.DateTime))), nil
 }
 
 type JSONDate time.Time
 
 func (j JSONDate) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%s", time.Time(j).Format(constants.DateFormat))), nil
+	return []byte(fmt.Sprintf("%s", time.Time(j).Format(time.DateOnly))), nil
 }
 
 type Response struct {
@@ -48,7 +46,7 @@ func MessageSuccess(c *gin.Context, errorMsg string, data interface{}) {
 
 func CSV(c *gin.Context, filename string, data [][]string) {
 	c.Header("Content-Type", "application/octet-stream")
-	c.Header("Content-Disposition", "attachment; filename="+time.Now().Format(constants.DateFormat)+filename)
+	c.Header("Content-Disposition", "attachment; filename="+time.Now().Format(time.DateOnly)+filename)
 
 	bytesBuffer := &bytes.Buffer{}
 	bytesBuffer.WriteString("\xEF\xBB\xBF")
@@ -72,7 +70,7 @@ func CSV(c *gin.Context, filename string, data [][]string) {
 
 func Binary(c *gin.Context, filename string, content []byte) {
 	c.Header("Content-Type", "application/octet-stream")
-	c.Header("Content-Disposition", "attachment; filename="+time.Now().Format(constants.DateFormat)+filename)
+	c.Header("Content-Disposition", "attachment; filename="+time.Now().Format(time.DateOnly)+filename)
 
 	bytesBuffer := &bytes.Buffer{}
 	bytesBuffer.Write(content)

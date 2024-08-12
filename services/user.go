@@ -333,7 +333,7 @@ func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error)
 		Introduce:   user.Introduce,
 		WechatCount: user.WechatCount,
 		FansCount:   user.FansCount,
-		CreatedAt:   user.CreatedAt.Format(constants.TimeFormat),
+		CreatedAt:   user.CreatedAt.Format(time.DateTime),
 	}
 	return userDetailResponse, nil
 }
