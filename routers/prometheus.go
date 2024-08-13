@@ -12,5 +12,5 @@ func SetPrometheus(app *gin.Engine) {
 		return
 	}
 
-	ginPrometheus.NewPrometheus("twitta").Use(app)
+	ginPrometheus.NewPrometheus(global.ServerConfig.Name).Use(app)
 }
