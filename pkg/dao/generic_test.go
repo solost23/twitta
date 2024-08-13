@@ -70,7 +70,7 @@ func TestGInsertMany(t *testing.T) {
 			Username:  "alex2",
 		},
 	}
-	_, err := GInsertMany[*User](context.TODO(), db, users)
+	err := GInsertMany[*User](context.TODO(), db, users)
 	if err != nil {
 		panic(err)
 	}
