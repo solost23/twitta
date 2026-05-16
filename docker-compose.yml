@@ -1,37 +1,44 @@
-version: "3.5"
-
 services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - app_net
+
   app:
     build: "."
     restart: always
     ports:
       - "6565:6565"
-    volumes:
-      - "/Users/ty/server/twitta/configs:/configs"
-      # - "/Users/ty/twitta/logs:/logs"
-      # 挂载证书
-      - "/Users/ty/server/twitta/certs:/etc/ssl/certs/"
+    environment:
+      GIN_MODE: debug
+      BIND_IP: "0.0.0.0"
     depends_on:
       - mongo
       - redis
-      - zinc
-#      - consul
+      - consul
     networks:
       - app_net
 
   mongo:
-    image: mongo:latest
+    image: mongo:6
     restart: always
     container_name: mongo
     ports:
       - "27017:27017"
     volumes:
-      - "/Users/ty/mongo/mongo_data:/data/db"
+      - mongo_data:/data/db
     networks:
       - app_net
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     restart: always
     container_name: redis
     ports:
@@ -39,28 +46,19 @@ services:
     networks:
       - app_net
 
-  zinc:
-    image: public.ecr.aws/zinclabs/zinc:latest
+  consul:
+    image: hashicorp/consul:1.17
     restart: always
-    container_name: zinc
-    environment:
-      ZINC_FIRST_ADMIN_USER: "admin"
-      ZINC_FIRST_ADMIN_PASSWORD: "Complexpass#123"
+    container_name: consul
     ports:
-      - "4080:4080"
-    volumes:
-      - "/Users/ty/zinc/data:/data"
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
     networks:
       - app_net
-# consul容器跟随服务创建，所以这里注释掉了
-#  consul:
-#    image: consul:latest
-#    container_name: consul
-#    ports:
-#      - "8500:8500"
-#    networks:
-#      - app_net
+
+volumes:
+  mongo_data:
 
 networks:
   app_net:
-    external: true
+    driver: bridge

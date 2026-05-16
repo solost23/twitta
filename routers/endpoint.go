@@ -47,6 +47,8 @@ func SetRouters(r *gin.Engine) {
 		middlewares.NewCasbinMiddleware().RequiresRoles([]string{"admin", "user"}, gcasbin.WithLogic(gcasbin.OR)),
 	)
 	{
+		// 通知相关
+		apiGroup.GET("notifications/ws", notifyWS)
 		// 用户相关
 		initAuthUserRouter(apiGroup)
 		// 推文相关

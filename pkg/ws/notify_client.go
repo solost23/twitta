@@ -1,0 +1,60 @@
+package ws
+
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
+)
+
+// Notification 是推送给用户的通知体。
+type Notification struct {
+	ToUserID  string    `json:"toUserId"`
+	FromID    string    `json:"fromId"`
+	FromName  string    `json:"fromName"`
+	RoomID    string    `json:"roomId"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+// NotifyClient 代表一个通知 WebSocket 连接。
+type NotifyClient struct {
+	hub    *NotifyHub
+	conn   *websocket.Conn
+	send   chan *Notification
+	userID string
+}
+
+func NewNotifyClient(hub *NotifyHub, conn *websocket.Conn, userID string) *NotifyClient {
+	return &NotifyClient{
+		hub:    hub,
+		conn:   conn,
+		send:   make(chan *Notification, 32),
+		userID: userID,
+	}
+}
+
+// WritePump 将通知写回 WebSocket，只写不读。
+func (c *NotifyClient) WritePump() {
+	defer func() {
+		c.hub.Unregister(c)
+		_ = c.conn.Close()
+	}()
+
+	for {
+		n, ok := <-c.send
+		if !ok {
+			_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+			return
+		}
+		b, err := json.Marshal(n)
+		if err != nil {
+			continue
+		}
+		if err = c.conn.WriteMessage(websocket.TextMessage, b); err != nil {
+			zap.S().Warnf("notify write error: %v", err)
+			return
+		}
+	}
+}

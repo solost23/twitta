@@ -320,7 +320,11 @@ func (*Service) UserUpdate(c *gin.Context, params *forms.UserUpdateForm) error {
 
 func (*Service) UserDetail(c *gin.Context, id string) (*forms.UserDetail, error) {
 	db := global.DB
-	user, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": id})
+	oid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return nil, errors.New("不存在此用户")
+	}
+	user, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": oid})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}

@@ -15,29 +15,52 @@ import (
 )
 
 // RoomID 按字典序拼接两个用户 ID，保证同一对用户的房间 ID 唯一。
+// 统一剥掉 ObjectID("...") 包装，使用纯 hex。
 func RoomID(a, b string) string {
+	a = normalizeID(a)
+	b = normalizeID(b)
 	if a < b {
 		return a + ":" + b
 	}
 	return b + ":" + a
 }
 
-// SaveChatMessage 将 WebSocket 消息持久化到 MongoDB。
+func normalizeID(id string) string {
+	if len(id) > 12 && id[:9] == `ObjectID(` {
+		id = id[10 : len(id)-2]
+	}
+	return id
+}
+
+// SaveChatMessage 将 WebSocket 消息持久化到 MongoDB，并向收件人推送通知。
 func SaveChatMessage(msg *ws.Message) {
+	fromID := normalizeID(msg.FromID)
+	targetID := normalizeID(targetIDFromRoom(msg.RoomID, msg.FromID))
 	data := &dao.LogPrivateLatter{
 		ID:        primitive.NewObjectID(),
 		CreatedAt: msg.CreatedAt,
 		UpdatedAt: msg.CreatedAt,
-		UserId:    msg.FromID,
-		TargetId:  targetIDFromRoom(msg.RoomID, msg.FromID),
+		UserId:    fromID,
+		TargetId:  targetID,
 		Content:   msg.Content,
 		Type:      dao.LogPrivateLatterTypePrivateLatter,
 	}
 	_ = dao.GInsertOne(context.Background(), global.DB, data)
+
+	// 向收件人推通知（跨节点有效）
+	if ws.DefaultNotify != nil {
+		ws.DefaultNotify.Notify(&ws.Notification{
+			ToUserID:  targetID,
+			FromID:    fromID,
+			RoomID:    msg.RoomID,
+			Content:   msg.Content,
+			CreatedAt: msg.CreatedAt,
+		})
+	}
 }
 
 func targetIDFromRoom(roomID, fromID string) string {
-	// roomID 格式: "uid1:uid2"
+	fromID = normalizeID(fromID)
 	for i, ch := range roomID {
 		if ch == ':' {
 			a, b := roomID[:i], roomID[i+1:]
@@ -52,11 +75,13 @@ func targetIDFromRoom(roomID, fromID string) string {
 
 func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*forms.ChatList, error) {
 	user := utils.GetUser(c)
+	myID := normalizeID(user.ID.String())
+	targetID := normalizeID(id)
 
 	query := bson.M{
 		"type":      dao.LogPrivateLatterTypePrivateLatter,
-		"user_id":   bson.M{"$in": []string{user.ID.String(), id}},
-		"target_id": bson.M{"$in": []string{user.ID.String(), id}},
+		"user_id":   bson.M{"$in": []string{myID, targetID}},
+		"target_id": bson.M{"$in": []string{myID, targetID}},
 	}
 	db := global.DB
 	logPrivateLatters, total, pages, err := dao.GPaginatorOrder[*dao.LogPrivateLatter](c, db, &dao.ListPageInput{
