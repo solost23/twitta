@@ -3,6 +3,7 @@ package routers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"twitta/global"
@@ -37,8 +38,15 @@ func Run(client *api.Client, app *gin.Engine) {
 		global.ServerConfig.Port = port
 	}
 
+	// 容器环境下通过 BIND_IP=0.0.0.0 让服务监听所有网卡
+	bindIP := ip
+	if envIP := os.Getenv("BIND_IP"); envIP != "" {
+		bindIP = envIP
+	}
+
 	addr := fmt.Sprintf("%s:%d", ip, serverConfig.Port)
-	// 生成检查对象
+	bindAddr := fmt.Sprintf("%s:%d", bindIP, serverConfig.Port)
+
 	check := &api.AgentServiceCheck{
 		Interval:                       interval,
 		Timeout:                        timeout,
@@ -47,7 +55,6 @@ func Run(client *api.Client, app *gin.Engine) {
 		DeregisterCriticalServiceAfter: deregisterAfter,
 	}
 
-	// 生成注册对象
 	registration := &api.AgentServiceRegistration{
 		ID:      addr,
 		Name:    serverConfig.Name,
@@ -61,9 +68,8 @@ func Run(client *api.Client, app *gin.Engine) {
 		zap.S().Panic("err register service", err.Error())
 	}
 
-	// Run the server
 	server := &http.Server{
-		Addr:         addr,
+		Addr:         bindAddr,
 		Handler:      app,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,

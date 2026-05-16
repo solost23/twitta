@@ -19,6 +19,9 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("token")
 		if token == "" {
+			token = c.Query("token")
+		}
+		if token == "" {
 			response.Error(c, 1999, errors.New("请登录"))
 			return
 		}
