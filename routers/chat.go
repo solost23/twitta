@@ -67,14 +67,15 @@ func chatWS(c *gin.Context) {
 	}
 
 	user := utils.GetUser(c)
-	roomID := services.RoomID(user.ID.String(), UIdForm.Id)
+	userID := user.ID.Hex()
+	roomID := services.RoomID(userID, UIdForm.Id)
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
 	}
 
-	client := ws.NewClient(ws.Default, conn, roomID, user.ID.String())
+	client := ws.NewClient(ws.Default, conn, roomID, userID)
 	ws.Default.Register(client)
 
 	go client.WritePump()

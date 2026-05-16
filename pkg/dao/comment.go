@@ -19,11 +19,11 @@ type Comment struct {
 	TweetId   string             `json:"tweetId" bson:"tweet_id,omitempty" comment:"推文 ID"`
 	Content   string             `json:"content" bson:"content,omitempty" comment:"推文内容"`
 	ParentId  string             `json:"parent" bson:"parent,omitempty" comment:"父节点 ID"`
-	Type      uint               `json:"type" bson:"type,omitempty" comment:"评论类型 0: 点赞 1: 评论"`
+	Type      uint               `json:"type" bson:"type" comment:"评论类型 0: 点赞 1: 评论"`
 }
 
 func (*Comment) TableName() string {
-	return "fans"
+	return "comments"
 }
 
 // func (t *Comment) InsertOne(ctx context.Context, db *mongo.Client, dbName string, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {

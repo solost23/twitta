@@ -1,4 +1,3 @@
-p,user,book,read
-g,alice,user
-g,solost,user
-g,solost,admin
+g,user,user
+g,admin,admin
+g,admin,user

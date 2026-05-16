@@ -19,24 +19,28 @@ func (*Service) FanList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 	user := utils.GetUser(c)
 
 	db := global.DB
-	fans, err := dao.GWhereFind[*dao.Fan](c, db, bson.M{"target_id": user.ID})
+	fans, err := dao.GWhereFind[*dao.Fan](c, db, bson.M{"target_id": user.ID.String()})
 	if err != nil {
 		return nil, err
 	}
-	userIds := make([]string, 0, len(fans))
-	for i := 0; i != len(fans); i++ {
-		userIds = append(userIds, fans[i].UserId)
+	oids := make([]primitive.ObjectID, 0, len(fans))
+	for _, f := range fans {
+		oid, err := utils.ParseObjectID(f.UserId)
+		if err != nil {
+			continue
+		}
+		oids = append(oids, oid)
 	}
-	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": oids}})
 	if err != nil {
 		return nil, err
 	}
 	fansResponse := make([]*forms.FansAndWhatResponse, 0, len(users))
-	for i := 0; i != len(users); i++ {
+	for _, u := range users {
 		fansResponse = append(fansResponse, &forms.FansAndWhatResponse{
-			UserId:    users[i].ID.String(),
-			Avatar:    utils.FulfillImageOSSPrefix(users[i].Avatar),
-			Introduce: users[i].Introduce,
+			UserId:    u.ID.String(),
+			Avatar:    utils.FulfillImageOSSPrefix(u.Avatar),
+			Introduce: u.Introduce,
 		})
 	}
 	return fansResponse, nil
@@ -46,25 +50,28 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 	user := utils.GetUser(c)
 
 	db := global.DB
-	fans, err := dao.GWhereFind[*dao.Fan](c, db, bson.M{"user_id": user.ID})
+	fans, err := dao.GWhereFind[*dao.Fan](c, db, bson.M{"user_id": user.ID.String()})
 	if err != nil {
 		return nil, err
 	}
-	userIds := make([]string, 0, len(fans))
-	for i := 0; i != len(fans); i++ {
-		userIds = append(userIds, fans[i].UserId)
+	oids := make([]primitive.ObjectID, 0, len(fans))
+	for _, f := range fans {
+		oid, err := utils.ParseObjectID(f.TargetId)
+		if err != nil {
+			continue
+		}
+		oids = append(oids, oid)
 	}
-
-	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": oids}})
 	if err != nil {
 		return nil, err
 	}
 	whatsResponse := make([]*forms.FansAndWhatResponse, 0, len(users))
-	for i := 0; i != len(users); i++ {
+	for _, u := range users {
 		whatsResponse = append(whatsResponse, &forms.FansAndWhatResponse{
-			UserId:    users[i].ID.String(),
-			Avatar:    utils.FulfillImageOSSPrefix(users[i].Avatar),
-			Introduce: users[i].Introduce,
+			UserId:    u.ID.String(),
+			Avatar:    utils.FulfillImageOSSPrefix(u.Avatar),
+			Introduce: u.Introduce,
 		})
 	}
 	return whatsResponse, nil
@@ -77,9 +84,13 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 	if user.ID.String() == id {
 		return errors.New(fmt.Sprintf("不能关注自己"))
 	}
+	targetOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效用户ID")
+	}
 	// 判断，如果已关注，那么直接提示不可重复关注
 	db := global.DB
-	_, err := dao.GWhereFirst[*dao.Fan](c, db, bson.M{"user_id": user.ID, "target_id": id})
+	_, err = dao.GWhereFirst[*dao.Fan](c, db, bson.M{"user_id": user.ID.String(), "target_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -103,7 +114,7 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereUpdate[*dao.User](c, db, bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": 1}})
+	_, err = dao.GWhereUpdate[*dao.User](c, db, bson.M{"_id": targetOid}, bson.M{"$inc": bson.M{"fans_count": 1}})
 	if err != nil {
 		return err
 	}
@@ -113,8 +124,12 @@ func (*Service) WhatUser(c *gin.Context, id string) error {
 func (*Service) WhatUserDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	targetOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效用户ID")
+	}
 	db := global.DB
-	_, err := dao.GWhereDelete[*dao.Fan](c, db, bson.M{"user_id": user.ID, "target_id": id})
+	_, err = dao.GWhereDelete[*dao.Fan](c, db, bson.M{"user_id": user.ID.String(), "target_id": id})
 	if err != nil {
 		return err
 	}
@@ -123,7 +138,7 @@ func (*Service) WhatUserDelete(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereUpdate[*dao.User](c, db, bson.M{"_id": id}, bson.M{"$inc": bson.M{"fans_count": -1}})
+	_, err = dao.GWhereUpdate[*dao.User](c, db, bson.M{"_id": targetOid}, bson.M{"$inc": bson.M{"fans_count": -1}})
 	if err != nil {
 		return err
 	}

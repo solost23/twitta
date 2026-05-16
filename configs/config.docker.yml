@@ -1,0 +1,40 @@
+name: "twitta"
+port: 6565
+time_location: "Asia/Shanghai"
+prometheus_enable: true
+config_path: api/twitta
+
+consul:
+  host: "consul"
+  port: 8500
+
+mongo:
+  hosts:
+    - "mongo:27017"
+  auth_source: ""
+  username: ""
+  password: ""
+  db: "twitta"
+  timeout: 30
+
+redis:
+  addr: "redis:6379"
+
+jwt:
+  key: "ajgiengijheiganege"
+  duration: 2678400
+
+static-oss:
+  domain: "http://minio:9000"
+
+push:
+  name: "push_service"
+
+oss:
+  name: "oss_service"
+
+es:
+  name: "es_service"
+
+face_recognition:
+  name: "face_recognition_service"

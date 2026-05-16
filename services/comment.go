@@ -20,13 +20,20 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 	comments, total, pages, err := dao.GPaginatorOrder[*dao.Comment](c, db, &dao.ListPageInput{
 		Page: params.Page,
 		Size: params.Size,
-	}, bson.M{"created_at": 1}, bson.M{"tweet_id": id, "type": 1})
-	userIds := make([]string, 0, len(comments))
-	for i := 0; i < cap(userIds); i++ {
-		userIds = append(userIds, comments[i].UserId)
+	}, bson.M{"created_at": 1}, bson.M{"tweet_id": id, "type": dao.CommentTypeComment})
+	if err != nil {
+		return nil, err
 	}
 
-	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
+	oids := make([]primitive.ObjectID, 0, len(comments))
+	for _, cm := range comments {
+		oid, err := utils.ParseObjectID(cm.UserId)
+		if err != nil {
+			continue
+		}
+		oids = append(oids, oid)
+	}
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": oids}})
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +43,7 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 		Avatar    *string
 		Introduce *string
 	}, len(users))
-	for i := 0; i < len(users); i++ {
+	for i := range users {
 		userIdToInfoMaps[users[i].ID.String()] = struct {
 			Username  *string
 			Avatar    *string
@@ -45,7 +52,7 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 	}
 
 	records := make([]*forms.Comment, 0, len(comments))
-	for i := 0; i < cap(records); i++ {
+	for i := range comments {
 		idStr := comments[i].ID.String()
 		records = append(records, &forms.Comment{
 			UserId:    &comments[i].UserId,
@@ -59,16 +66,16 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 		})
 	}
 
-	nodeRecords := make([]*forms.Comment, 0)
-	arrNode := make([]utils.TreeNode, 0, len(comments))
-	for i := 0; i < cap(arrNode); i++ {
-		arrNode[i] = records[i]
+	arrNode := make([]utils.TreeNode, len(records))
+	for i, r := range records {
+		arrNode[i] = r
 	}
 	rootNodes := utils.BuildTrees(arrNode)
 	rootNodesByte, err := json.Marshal(rootNodes)
 	if err != nil {
 		return nil, err
 	}
+	nodeRecords := make([]*forms.Comment, 0)
 	err = json.Unmarshal(rootNodesByte, &nodeRecords)
 	if err != nil {
 		return nil, err
@@ -89,9 +96,13 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 func (*Service) CommentThumb(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	tweetOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
 	// 查看有无点赞记录，如果无，那么创建, 文章下的点赞数 +1
 	db := global.DB
-	comment, err := dao.GWhereFirst[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID, "tweet_id": id})
+	comment, err := dao.GWhereFirst[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID.String(), "tweet_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -110,7 +121,7 @@ func (*Service) CommentThumb(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": id}, bson.M{"$inc": bson.M{"thumb_count": 1}})
+	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": tweetOid}, bson.M{"$inc": bson.M{"thumb_count": 1}})
 	if err != nil {
 		return err
 	}
@@ -120,20 +131,24 @@ func (*Service) CommentThumb(c *gin.Context, id string) error {
 func (*Service) CommentThumbDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	tweetOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
 	// 查询是否存在此👍
 	db := global.DB
-	_, err := dao.GWhereFirst[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID, "tweet_id": id})
+	_, err = dao.GWhereFirst[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID.String(), "tweet_id": id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return errors.New("您已经取消赞，不可重复取消")
 	}
-	_, err = dao.GWhereDelete[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID, "tweet_id": id})
+	_, err = dao.GWhereDelete[*dao.Comment](c, db, bson.M{"type": 0, "user_id": user.ID.String(), "tweet_id": id})
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": id}, bson.M{"$inc": bson.M{"thumb_count": -1}})
+	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": tweetOid}, bson.M{"$inc": bson.M{"thumb_count": -1}})
 	if err != nil {
 		return err
 	}
@@ -143,6 +158,10 @@ func (*Service) CommentThumbDelete(c *gin.Context, id string) error {
 func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentInsertForm) error {
 	user := utils.GetUser(c)
 
+	tweetOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
 	// 直接插入评论记录
 	data := &dao.Comment{
 		ID:        primitive.NewObjectID(),
@@ -159,7 +178,7 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 	if err := dao.GInsertOne[*dao.Comment](c, db, data); err != nil {
 		return err
 	}
-	_, err := dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": id}, bson.M{"$inc": bson.M{"comment_count": 1}})
+	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": tweetOid}, bson.M{"$inc": bson.M{"comment_count": 1}})
 	if err != nil {
 		return err
 	}
@@ -169,20 +188,28 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 func (*Service) CommentDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	commentOid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效评论ID")
+	}
 	// 查询是否存在此评论
 	db := global.DB
-	comment, err := dao.GWhereFirst[*dao.Comment](c, db, bson.M{"_id": id, "type": 1, "user_id": user.ID})
+	comment, err := dao.GWhereFirst[*dao.Comment](c, db, bson.M{"_id": commentOid, "type": 1, "user_id": user.ID.String()})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return errors.New("您已经删除此评论，不可重复删除")
 	}
-	_, err = dao.GWhereDelete[*dao.Comment](c, db, bson.M{"_id": id, "type": 1, "user_id": user.ID})
+	_, err = dao.GWhereDelete[*dao.Comment](c, db, bson.M{"_id": commentOid, "type": dao.CommentTypeComment, "user_id": user.ID.String()})
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": comment.TweetId}, bson.M{"$inc": bson.M{"comment_count": -1}})
+	tweetOid, err := utils.ParseObjectID(comment.TweetId)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
+	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": tweetOid}, bson.M{"$inc": bson.M{"comment_count": -1}})
 	if err != nil {
 		return err
 	}
