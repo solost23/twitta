@@ -9,6 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//@Summary friend list
+//@Tags friend
+//@Produce json
+//@Success 200 {object} forms.FriendListResponse
+//@Failure 400 {object} response.Response
+//	@Param	token	header	string	true	"token"
+//@Router /friends/list [get]
+func friendList(c *gin.Context) {
+	result, err := services.NewService().FriendList(c)
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.Success(c, result)
+}
+
 //@Summary send friend application
 //@Tags friend
 //@Produce json

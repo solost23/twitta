@@ -51,7 +51,7 @@ func (*Service) WhatList(c *gin.Context) ([]*forms.FansAndWhatResponse, error) {
 		return nil, err
 	}
 	userIds := make([]string, 0, len(fans))
-	for i := 0; i != len(userIds); i++ {
+	for i := 0; i != len(fans); i++ {
 		userIds = append(userIds, fans[i].UserId)
 	}
 

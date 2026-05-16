@@ -31,6 +31,7 @@ func (*Service) TweetSend(c *gin.Context, params *forms.TweetCreateForm) error {
 		UserID:       user.ID.String(),
 		Title:        params.Title,
 		Content:      params.Content,
+		Images:       params.Images,
 		ThumbCount:   0,
 		CommentCount: 0,
 	}
@@ -93,7 +94,10 @@ func (*Service) TweetDelete(c *gin.Context, id string) error {
 
 func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetList, error) {
 	db := global.DB
-	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{})
+	tweets, total, pages, err := dao.GPaginatorOrder[*dao.Tweet](c, db, &dao.ListPageInput{
+		Page: params.Page,
+		Size: params.Size,
+	}, bson.M{"created_at": -1}, bson.M{})
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +119,6 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 			Avatar   string
 		}{Username: user.Username, Avatar: user.Avatar}
 	}
-	// 封装数据返回
 	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
 		records = append(records, &forms.Tweet{
@@ -125,12 +128,19 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
+			Images:       tweet.Images,
 			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
 		})
 	}
 	result := &forms.TweetList{
+		PageList: utils.PageList{
+			Size:    params.Size,
+			Pages:   pages,
+			Total:   total,
+			Current: params.Page,
+		},
 		Records: records,
 	}
 	return result, nil
@@ -153,6 +163,7 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
+			Images:       tweet.Images,
 			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,
@@ -209,6 +220,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 			ID:           tweet.ID.String(),
 			Title:        tweet.Title,
 			Content:      tweet.Content,
+			Images:       tweet.Images,
 			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
 			ThumbCount:   tweet.ThumbCount,
 			CommentCount: tweet.CommentCount,

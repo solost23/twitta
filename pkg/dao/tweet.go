@@ -13,6 +13,7 @@ type Tweet struct {
 	UserID       string             `json:"userId" bson:"user_id,omitempty" comment:"用户 ID"`
 	Title        string             `json:"title" bson:"title,omitempty" comment:"标题"`
 	Content      string             `json:"content" bson:"content,omitempty" comment:"内容"`
+	Images       []string           `json:"images" bson:"images,omitempty" comment:"图片/视频 URL 列表"`
 	ThumbCount   int64              `json:"thumbCount" bson:"thumb_count,omitempty" comment:"点赞数"`
 	CommentCount int64              `json:"commentCount" bson:"comment_count,omitempty" comment:"评论数"`
 }

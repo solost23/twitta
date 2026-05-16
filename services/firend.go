@@ -15,6 +15,35 @@ import (
 	"twitta/pkg/utils"
 )
 
+func (*Service) FriendList(c *gin.Context) ([]*forms.FriendListResponse, error) {
+	user := utils.GetUser(c)
+
+	db := global.DB
+	friends, err := dao.GWhereFind[*dao.Friend](c, db, bson.M{"user_id": user.ID})
+	if err != nil {
+		return nil, err
+	}
+	friendIds := make([]string, 0, len(friends))
+	for _, f := range friends {
+		friendIds = append(friendIds, f.FriendId)
+	}
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": friendIds}})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*forms.FriendListResponse, 0, len(users))
+	for _, u := range users {
+		result = append(result, &forms.FriendListResponse{
+			UserId:    u.ID.String(),
+			Username:  u.Username,
+			Nickname:  u.Nickname,
+			Avatar:    utils.FulfillImageOSSPrefix(u.Avatar),
+			Introduce: u.Introduce,
+		})
+	}
+	return result, nil
+}
+
 func (*Service) FriendApplicationList(c *gin.Context) ([]*forms.FriendApplicationListResponse, error) {
 	user := utils.GetUser(c)
 
@@ -173,7 +202,7 @@ func (*Service) FriendDelete(c *gin.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = dao.GWhereDelete[*dao.LogPrivateLatter](c, db, bson.M{"target_id": id, "user_id": id})
+	_, err = dao.GWhereDelete[*dao.LogPrivateLatter](c, db, bson.M{"target_id": user.ID, "user_id": id})
 	if err != nil {
 		return err
 	}

@@ -97,6 +97,8 @@ func initAuthTweetRouter(group *gin.RouterGroup) {
 func initAuthFriendRouter(group *gin.RouterGroup) {
 	friend := group.Group("friends")
 	{
+		// 好友列表
+		friend.GET("list", friendList)
 		// 发送好友申请-朋友私信发送
 		friend.POST("", friendApplicationSend)
 		// 通过好友申请
@@ -113,8 +115,10 @@ func initAuthFriendRouter(group *gin.RouterGroup) {
 func initAuthChatRouter(group *gin.RouterGroup) {
 	chat := group.Group("chats")
 	{
-		// 聊天信息列表
+		// 历史消息列表
 		chat.GET(":id", chatList)
+		// WebSocket 实时聊天
+		chat.GET(":id/ws", chatWS)
 	}
 }
 

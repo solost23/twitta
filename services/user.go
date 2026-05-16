@@ -250,7 +250,9 @@ func loginAndGetToken(ctx context.Context, platform string, user *dao.User) (str
 }
 
 func (s *Service) Logout(c *gin.Context) error {
-	if err := cache.Del(c, 10, c.GetString("token")+c.GetString("token")); err != nil {
+	platform := c.GetString("platform")
+	token := c.Request.Header.Get("token")
+	if err := cache.Del(c, cache.TokenDB, platform+token); err != nil {
 		zap.S().Error(err)
 	}
 	return nil
