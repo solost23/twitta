@@ -34,18 +34,18 @@ func InitConfig(configFilePath string) {
 		panic(err)
 	}
 
-	// 从配置中心读取配置
+	// 从配置中心读取配置，失败时使用本地配置
 	err := v.AddRemoteProvider(provider,
 		fmt.Sprintf("%s:%d", global.ServerConfig.ConsulConfig.Host, global.ServerConfig.ConsulConfig.Port),
 		global.ServerConfig.ConfigPath)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	v.SetConfigType("YAML")
 
 	if err = v.ReadRemoteConfig(); err != nil {
-		panic(err)
+		return
 	}
 
 	if err = v.Unmarshal(global.ServerConfig); err != nil {

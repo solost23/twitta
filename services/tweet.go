@@ -70,15 +70,19 @@ func (s *Service) StaticUpload(c *gin.Context, file *multipart.FileHeader) (stri
 func (*Service) TweetDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	oid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
 	db := global.DB
-	tweet, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": id})
+	tweet, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": oid})
 	if err != nil {
 		return err
 	}
 	if user.ID.String() != tweet.UserID {
 		return errors.New("本推文所属用户不是您，无权删除")
 	}
-	_, err = dao.GWhereDelete[*dao.Tweet](c, db, bson.M{"_id": id})
+	_, err = dao.GWhereDelete[*dao.Tweet](c, db, bson.M{"_id": oid})
 	if err != nil {
 		return err
 	}
@@ -150,7 +154,7 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 	user := utils.GetUser(c)
 
 	db := global.DB
-	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"user_id": user.ID})
+	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"user_id": user.ID.String()})
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +184,7 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	user := utils.GetUser(c)
 
 	db := global.DB
-	favorites, err := dao.GWhereFind[*dao.Favorite](c, db, bson.M{"user_id": user.ID})
+	favorites, err := dao.GWhereFind[*dao.Favorite](c, db, bson.M{"user_id": user.ID.String()})
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +242,7 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 
 	// 查询此用户有无收藏此文章
 	db := global.DB
-	_, err := dao.GWhereFirst[*dao.Favorite](c, db, bson.M{"user_id": user.ID, "tweet_id": params.Id})
+	_, err := dao.GWhereFirst[*dao.Favorite](c, db, bson.M{"user_id": user.ID.String(), "tweet_id": params.Id})
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
@@ -262,8 +266,12 @@ func (*Service) TweetFavorite(c *gin.Context, params *forms.TweetFavoriteForm) e
 func (*Service) TweetFavoriteDelete(c *gin.Context, id string) error {
 	user := utils.GetUser(c)
 
+	oid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效收藏ID")
+	}
 	db := global.DB
-	_, err := dao.GWhereDelete[*dao.Favorite](c, db, bson.M{"user_id": user.ID, "_id": id})
+	_, err = dao.GWhereDelete[*dao.Favorite](c, db, bson.M{"user_id": user.ID.String(), "_id": oid})
 	if err != nil {
 		return err
 	}
