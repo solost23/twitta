@@ -57,13 +57,44 @@ function connectNotifyWs() {
   if (!auth.isLoggedIn) return
   ws = new WebSocket(buildNotifyWsUrl())
 
+  // 离线消息可能短时间内连续到达，用 buffer 合并展示
+  let offlineBuffer: any[] = []
+  let offlineTimer: ReturnType<typeof setTimeout> | null = null
+
+  function flushOffline() {
+    if (!offlineBuffer.length) return
+    const byFrom: Record<string, { name: string; count: number; fromId: string }> = {}
+    for (const n of offlineBuffer) {
+      const id = normalizeId(n.fromId)
+      if (!byFrom[id]) byFrom[id] = { name: n.fromName || '好友', count: 0, fromId: n.fromId }
+      byFrom[id].count++
+    }
+    for (const { name, count, fromId } of Object.values(byFrom)) {
+      notify.increment(count)
+      ElNotification({
+        title: `${name} 发来 ${count} 条消息`,
+        message: offlineBuffer.filter(n => normalizeId(n.fromId) === normalizeId(fromId)).at(-1)?.content ?? '',
+        type: 'info',
+        duration: 5000,
+        onClick: () => { notify.clear(); router.push(`/chat/${fromId}`) }
+      })
+    }
+    offlineBuffer = []
+  }
+
   ws.onmessage = e => {
     try {
       const n = JSON.parse(e.data)
-      // 如果当前已在该聊天页，不弹通知
       const chatPath = `/chat/${normalizeId(n.fromId)}`
-      const altPath = `/chat/${n.fromId}`
-      if (route.path === chatPath || route.path === altPath) return
+      if (route.path === chatPath) return
+
+      // 连接建立后 300ms 内到达的消息视为离线消息，合并展示
+      if (offlineTimer !== null) {
+        offlineBuffer.push(n)
+        clearTimeout(offlineTimer)
+        offlineTimer = setTimeout(flushOffline, 300)
+        return
+      }
 
       notify.increment()
       ElNotification({
@@ -71,16 +102,18 @@ function connectNotifyWs() {
         message: n.content,
         type: 'info',
         duration: 4000,
-        onClick: () => {
-          notify.clear()
-          router.push(`/chat/${n.fromId}`)
-        }
+        onClick: () => { notify.clear(); router.push(`/chat/${n.fromId}`) }
       })
     } catch {}
   }
 
+  ws.onopen = () => {
+    // 开启离线消息收集窗口
+    offlineBuffer = []
+    offlineTimer = setTimeout(() => { offlineTimer = null; flushOffline() }, 300)
+  }
+
   ws.onclose = () => {
-    // 断线后 3 秒重连
     setTimeout(() => { if (auth.isLoggedIn) connectNotifyWs() }, 3000)
   }
 }

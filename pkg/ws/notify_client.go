@@ -35,6 +35,14 @@ func NewNotifyClient(hub *NotifyHub, conn *websocket.Conn, userID string) *Notif
 	}
 }
 
+// SendNotification 向该客户端发送一条通知，非阻塞。
+func (c *NotifyClient) SendNotification(n *Notification) {
+	select {
+	case c.send <- n:
+	default:
+	}
+}
+
 // WritePump 将通知写回 WebSocket，只写不读。
 func (c *NotifyClient) WritePump() {
 	defer func() {

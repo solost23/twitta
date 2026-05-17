@@ -44,6 +44,7 @@ func SaveChatMessage(msg *ws.Message) {
 		TargetId:  targetID,
 		Content:   msg.Content,
 		Type:      dao.LogPrivateLatterTypePrivateLatter,
+		Read:      false,
 	}
 	_ = dao.GInsertOne(context.Background(), global.DB, data)
 
@@ -111,5 +112,46 @@ func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*
 		},
 	}
 	return result, nil
+}
+
+// GetAndMarkOfflineMessages 查询发给 userID 的未读私信，标记为已读后返回。
+func GetAndMarkOfflineMessages(userID string) ([]*ws.Notification, error) {
+	filter := bson.M{
+		"target_id": userID,
+		"type":      dao.LogPrivateLatterTypePrivateLatter,
+		"read":      false,
+	}
+	msgs, err := dao.GWhereFind[*dao.LogPrivateLatter](context.Background(), global.DB, filter)
+	if err != nil {
+		return nil, err
+	}
+	if len(msgs) == 0 {
+		return nil, nil
+	}
+
+	ids := make([]primitive.ObjectID, 0, len(msgs))
+	for _, m := range msgs {
+		ids = append(ids, m.ID)
+	}
+	_, err = dao.GWhereUpdate[*dao.LogPrivateLatter](
+		context.Background(), global.DB,
+		bson.M{"_id": bson.M{"$in": ids}},
+		bson.M{"$set": bson.M{"read": true}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	notifications := make([]*ws.Notification, 0, len(msgs))
+	for _, m := range msgs {
+		notifications = append(notifications, &ws.Notification{
+			ToUserID:  userID,
+			FromID:    m.UserId,
+			RoomID:    RoomID(m.UserId, userID),
+			Content:   m.Content,
+			CreatedAt: m.CreatedAt,
+		})
+	}
+	return notifications, nil
 }
 
