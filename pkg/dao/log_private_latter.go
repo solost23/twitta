@@ -21,6 +21,7 @@ type LogPrivateLatter struct {
 	TargetId  string             `json:"targetId" bson:"target_id,omitempty" comment:"目标 ID"`
 	Content   string             `json:"content" bson:"content,omitempty" comment:"私信内容"`
 	Type      uint               `json:"type" bson:"type" comment:"是否通过好友 0 接受/拒绝 1 接受 2 拒绝 3 朋友私信内容"`
+	Read      bool               `json:"read" bson:"read" comment:"是否已读"`
 }
 
 //	func NewLogPrivateLatter() *LogPrivateLatter {
