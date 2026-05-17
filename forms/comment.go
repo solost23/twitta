@@ -5,6 +5,9 @@ import "twitta/pkg/utils"
 type CommentInsertForm struct {
 	Content  *string `json:"content" binding:"required,min=3"`
 	ParentId *string `json:"parentId"`
+}
+
+type CommentListForm struct {
 	utils.PageForm
 }
 

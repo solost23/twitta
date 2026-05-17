@@ -15,7 +15,7 @@ import (
 	"twitta/pkg/utils"
 )
 
-func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInsertForm) (*forms.CommentList, error) {
+func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentListForm) (*forms.CommentList, error) {
 	db := global.DB
 	comments, total, pages, err := dao.GPaginatorOrder[*dao.Comment](c, db, &dao.ListPageInput{
 		Page: params.Page,

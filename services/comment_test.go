@@ -51,9 +51,7 @@ func TestServiceCommentList(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		results, err := (&Service{}).CommentList(test.arg.ctx, test.arg.id, &forms.CommentInsertForm{
-			Content:  &test.arg.content,
-			ParentId: &test.arg.parentId,
+		results, err := (&Service{}).CommentList(test.arg.ctx, test.arg.id, &forms.CommentListForm{
 			PageForm: utils.PageForm{
 				Page: 1, Size: 10,
 			},

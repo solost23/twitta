@@ -23,7 +23,7 @@ func commentList(c *gin.Context) {
 		response.Error(c, 2001, err)
 		return
 	}
-	params := &forms.CommentInsertForm{}
+	params := &forms.CommentListForm{}
 	if err := utils.DefaultGetValidParams(c, params); err != nil {
 		response.Error(c, 2001, err)
 		return
