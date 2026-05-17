@@ -84,3 +84,18 @@ func chatWS(c *gin.Context) {
 	})
 }
 
+// chatRead 将对方发给我的消息标记为已读
+func chatRead(c *gin.Context) {
+	UIdForm := &utils.UIdForm{}
+	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	user := utils.GetUser(c)
+	if err := services.MarkMessagesRead(c, UIdForm.Id, user.ID.Hex()); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.Success(c, nil)
+}
+

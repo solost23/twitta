@@ -121,6 +121,8 @@ func initAuthChatRouter(group *gin.RouterGroup) {
 		chat.GET(":id", chatList)
 		// WebSocket 实时聊天
 		chat.GET(":id/ws", chatWS)
+		// 标记消息已读
+		chat.PUT(":id/read", chatRead)
 	}
 }
 

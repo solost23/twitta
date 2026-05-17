@@ -13,4 +13,5 @@ type Chat struct {
 	Msg       *string `json:"msg"`
 	UserId    *string `json:"userId"`
 	CreatedAt *string `json:"createdAt"`
+	Read      bool    `json:"read"`
 }

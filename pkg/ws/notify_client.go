@@ -15,6 +15,7 @@ type Notification struct {
 	FromName  string    `json:"fromName"`
 	RoomID    string    `json:"roomId"`
 	Content   string    `json:"content"`
+	Type      string    `json:"type"` // "message" | "read_receipt"
 	CreatedAt time.Time `json:"createdAt"`
 }
 

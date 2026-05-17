@@ -55,6 +55,7 @@ func SaveChatMessage(msg *ws.Message) {
 			FromID:    fromID,
 			RoomID:    msg.RoomID,
 			Content:   msg.Content,
+			Type:      "message",
 			CreatedAt: msg.CreatedAt,
 		})
 	}
@@ -100,6 +101,7 @@ func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*
 			UserId:    &logPrivateLatters[i].UserId,
 			Msg:       &logPrivateLatters[i].Content,
 			CreatedAt: &createdAt,
+			Read:      logPrivateLatters[i].Read,
 		})
 	}
 	result := &forms.ChatList{
@@ -114,7 +116,32 @@ func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*
 	return result, nil
 }
 
-// GetAndMarkOfflineMessages 查询发给 userID 的未读私信，标记为已读后返回。
+// MarkMessagesRead 将 fromID 发给 toID 的未读消息标记为已读，并通过 WS 推已读回执给 fromID。
+func MarkMessagesRead(c *gin.Context, fromID, toID string) error {
+	fromID = normalizeID(fromID)
+	toID = normalizeID(toID)
+
+	_, err := dao.GWhereUpdate[*dao.LogPrivateLatter](
+		c, global.DB,
+		bson.M{"user_id": fromID, "target_id": toID, "type": dao.LogPrivateLatterTypePrivateLatter, "read": false},
+		bson.M{"$set": bson.M{"read": true}},
+	)
+	if err != nil {
+		return err
+	}
+
+	// 推已读回执给发送方（让对方界面更新已读状态）
+	if ws.DefaultNotify != nil {
+		ws.DefaultNotify.Notify(&ws.Notification{
+			ToUserID: fromID,
+			FromID:   toID,
+			RoomID:   RoomID(fromID, toID),
+			Type:     "read_receipt",
+		})
+	}
+	return nil
+}
+
 func GetAndMarkOfflineMessages(userID string) ([]*ws.Notification, error) {
 	filter := bson.M{
 		"target_id": userID,
