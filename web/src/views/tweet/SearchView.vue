@@ -6,7 +6,7 @@
 
     <el-tabs v-if="searched" v-model="tab">
       <el-tab-pane label="推文" name="tweet">
-        <TweetCard v-for="t in tweetResults" :key="t.id" :tweet="t" @deleted="search" @thumb="() => {}" />
+        <TweetCard v-for="t in tweetResults" :key="t.id" :tweet="t" @deleted="search" />
         <el-empty v-if="!tweetResults.length" description="无结果" />
       </el-tab-pane>
       <el-tab-pane label="用户" name="user">

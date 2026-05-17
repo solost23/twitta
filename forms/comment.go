@@ -16,6 +16,7 @@ type Comment struct {
 	Avatar    *string `json:"avatar"`
 	Introduce *string `json:"introduce"`
 	Content   *string `json:"content"`
+	CreatedAt *string `json:"createdAt"`
 	Children  []*Comment
 }
 

@@ -54,6 +54,7 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 	records := make([]*forms.Comment, 0, len(comments))
 	for i := range comments {
 		idStr := comments[i].ID.String()
+		createdAt := comments[i].CreatedAt.Format(time.DateTime)
 		records = append(records, &forms.Comment{
 			UserId:    &comments[i].UserId,
 			PID:       &comments[i].ParentId,
@@ -62,6 +63,7 @@ func (*Service) CommentList(c *gin.Context, id string, params *forms.CommentInse
 			Introduce: userIdToInfoMaps[comments[i].UserId].Introduce,
 			Id:        &idStr,
 			Content:   &comments[i].Content,
+			CreatedAt: &createdAt,
 			Children:  nil,
 		})
 	}
@@ -163,6 +165,10 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 		return errors.New("无效推文ID")
 	}
 	// 直接插入评论记录
+	parentId := ""
+	if params.ParentId != nil {
+		parentId = *params.ParentId
+	}
 	data := &dao.Comment{
 		ID:        primitive.NewObjectID(),
 		CreatedAt: time.Now(),
@@ -170,7 +176,7 @@ func (*Service) CommentInsert(c *gin.Context, id string, params *forms.CommentIn
 		UserId:    user.ID.String(),
 		TweetId:   id,
 		Content:   *params.Content,
-		ParentId:  *params.ParentId,
+		ParentId:  parentId,
 		Type:      dao.CommentTypeComment,
 	}
 

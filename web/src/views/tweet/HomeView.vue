@@ -21,7 +21,6 @@
       :key="tweet.id"
       :tweet="tweet"
       @deleted="loadTweets"
-      @thumb="handleThumb"
     />
 
     <el-pagination
@@ -73,12 +72,6 @@ async function sendTweet() {
   } finally {
     sending.value = false
   }
-}
-
-async function handleThumb(tweetId: string, liked: boolean) {
-  if (liked) await tweetApi.thumb(tweetId)
-  else await tweetApi.unthumb(tweetId)
-  loadTweets()
 }
 
 onMounted(loadTweets)

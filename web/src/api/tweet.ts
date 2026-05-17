@@ -8,7 +8,7 @@ export interface Tweet {
 export interface TweetList { records: Tweet[]; total: number; pages: number; size: number; current: number }
 export interface Comment {
   id: string; pid: string; userId: string; username: string
-  avatar: string; content: string; children: Comment[]
+  avatar: string; content: string; createdAt: string; children: Comment[]
 }
 
 export const tweetApi = {

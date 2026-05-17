@@ -21,30 +21,45 @@
       />
     </div>
     <div class="actions">
-      <el-button link @click="emit('thumb', tweet.id, true)">
-        <el-icon><Pointer /></el-icon> {{ tweet.thumbCount }}
+      <el-button link :class="{ liked }" @click="toggleThumb">
+        <el-icon><Pointer /></el-icon> {{ localThumbCount }}
       </el-button>
-      <el-button link @click="showComments = !showComments">
-        <el-icon><ChatLineRound /></el-icon> {{ tweet.commentCount }}
+      <el-button link @click="toggleComments">
+        <el-icon><ChatLineRound /></el-icon> {{ localCommentCount }}
       </el-button>
-      <el-button link @click="favorite">
-        <el-icon><Star /></el-icon> 收藏
+      <el-button link @click="toggleFavorite">
+        <el-icon><Star /></el-icon> {{ favorited ? '已收藏' : '收藏' }}
       </el-button>
     </div>
 
     <!-- 评论区 -->
     <div v-if="showComments" class="comments">
       <div class="comment-input">
-        <el-input v-model="commentText" placeholder="写评论..." size="small" style="flex:1" />
-        <el-button size="small" type="primary" @click="submitComment">发送</el-button>
+        <el-input
+          v-model="commentText"
+          placeholder="写评论..."
+          size="small"
+          style="flex:1"
+          @keyup.enter="submitComment"
+        />
+        <el-button size="small" type="primary" :loading="submitting" @click="submitComment">发送</el-button>
       </div>
-      <CommentItem v-for="c in comments" :key="c.id" :comment="c" />
+      <div v-if="loading" class="loading-tip">加载中...</div>
+      <el-empty v-else-if="!comments.length" description="暂无评论" :image-size="40" />
+      <CommentItem
+        v-for="c in comments"
+        :key="c.id"
+        :comment="c"
+        :tweet-id="tweet.id"
+        @replied="loadComments"
+        @deleted="onCommentDeleted"
+      />
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { tweetApi, type Tweet, type Comment } from '@/api/tweet'
 import { useAuthStore } from '@/stores/auth'
@@ -60,6 +75,13 @@ const auth = useAuthStore()
 const showComments = ref(false)
 const comments = ref<Comment[]>([])
 const commentText = ref('')
+const loading = ref(false)
+const submitting = ref(false)
+const liked = ref(false)
+const favorited = ref(false)
+const localThumbCount = ref(props.tweet.thumbCount)
+const localCommentCount = ref(props.tweet.commentCount)
+
 const isOwn = computed(() => auth.user?.id === props.tweet.userId)
 
 function ossUrl(path: string) {
@@ -77,24 +99,62 @@ async function deleteTweet() {
   emit('deleted')
 }
 
-async function favorite() {
-  await tweetApi.favorite(props.tweet.id)
-  ElMessage.success('已收藏')
+async function toggleThumb() {
+  if (liked.value) {
+    await tweetApi.unthumb(props.tweet.id)
+    liked.value = false
+    localThumbCount.value--
+  } else {
+    await tweetApi.thumb(props.tweet.id)
+    liked.value = true
+    localThumbCount.value++
+  }
+}
+
+async function toggleFavorite() {
+  if (favorited.value) {
+    await tweetApi.unfavorite(props.tweet.id)
+    favorited.value = false
+    ElMessage.success('已取消收藏')
+  } else {
+    await tweetApi.favorite(props.tweet.id)
+    favorited.value = true
+    ElMessage.success('已收藏')
+  }
+}
+
+async function toggleComments() {
+  showComments.value = !showComments.value
+  if (showComments.value && !comments.value.length) await loadComments()
 }
 
 async function loadComments() {
-  const res = await tweetApi.commentList(props.tweet.id)
-  comments.value = res.records
+  loading.value = true
+  try {
+    const res = await tweetApi.commentList(props.tweet.id)
+    comments.value = res.records ?? []
+  } finally {
+    loading.value = false
+  }
 }
 
 async function submitComment() {
   if (!commentText.value.trim()) return
-  await tweetApi.comment(props.tweet.id, commentText.value)
-  commentText.value = ''
-  loadComments()
+  submitting.value = true
+  try {
+    await tweetApi.comment(props.tweet.id, commentText.value)
+    commentText.value = ''
+    localCommentCount.value++
+    await loadComments()
+  } finally {
+    submitting.value = false
+  }
 }
 
-watch(showComments, v => { if (v) loadComments() })
+function onCommentDeleted() {
+  localCommentCount.value = Math.max(0, localCommentCount.value - 1)
+  loadComments()
+}
 </script>
 
 <style scoped>
@@ -109,6 +169,8 @@ watch(showComments, v => { if (v) loadComments() })
 .images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .thumb-img { width: 120px; height: 120px; border-radius: 6px; cursor: pointer; }
 .actions { display: flex; gap: 16px; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
+.actions .liked { color: #1da1f2; }
 .comments { margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
-.comment-input { display: flex; gap: 8px; margin-bottom: 8px; }
+.comment-input { display: flex; gap: 8px; margin-bottom: 12px; }
+.loading-tip { font-size: 13px; color: #bbb; text-align: center; padding: 8px; }
 </style>

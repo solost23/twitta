@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3 style="margin-bottom:16px">我的收藏</h3>
-    <TweetCard v-for="t in tweets" :key="t.id" :tweet="t" @deleted="load" @thumb="() => {}" />
+    <TweetCard v-for="t in tweets" :key="t.id" :tweet="t" @deleted="load" />
     <el-empty v-if="!tweets.length" description="暂无收藏" />
   </div>
 </template>
