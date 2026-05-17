@@ -85,6 +85,13 @@ function connectNotifyWs() {
   ws.onmessage = e => {
     try {
       const n = JSON.parse(e.data)
+
+      // 转发给聊天页处理已读回执
+      window.dispatchEvent(new CustomEvent('twitta:notify', { detail: n }))
+
+      // 已读回执不弹通知
+      if (n.type !== 'message') return
+
       const chatPath = `/chat/${normalizeId(n.fromId)}`
       if (route.path === chatPath) return
 

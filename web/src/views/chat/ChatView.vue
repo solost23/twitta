@@ -68,6 +68,7 @@ interface DisplayMsg {
   fromId?: string; userId?: string
   content?: string; msg?: string
   createdAt: string; read: boolean
+  _pending?: boolean
 }
 
 const route = useRoute()
@@ -139,6 +140,14 @@ function connectWs() {
   ws.onmessage = e => {
     const msg = JSON.parse(e.data) as DisplayMsg
     msg.read = false
+    if (isMine(msg)) {
+      // 用服务端确认消息替换乐观消息，避免重复
+      const idx = messages.value.findIndex(m => m._pending && (m.content || m.msg) === (msg.content || msg.msg))
+      if (idx !== -1) {
+        messages.value[idx] = { ...msg, _pending: false }
+        return
+      }
+    }
     messages.value.push(msg)
     scrollBottom()
     // 收到对方消息立即标记已读
@@ -153,6 +162,7 @@ function send() {
     content: inputText.value,
     createdAt: new Date().toISOString(),
     read: false,
+    _pending: true,
   }
   messages.value.push(optimistic)
   scrollBottom()
@@ -162,7 +172,8 @@ function send() {
 
 async function loadHistory(p = 1) {
   const res = await chatApi.history(targetId, p, 20)
-  const older = res.records.map(r => ({
+  // 后端降序返回，reverse 后得到时间升序（旧→新），prepend 到消息列表顶部
+  const older = [...res.records].reverse().map(r => ({
     userId: r.userId, msg: r.msg, createdAt: r.createdAt, read: r.read
   }))
   messages.value = [...older, ...messages.value]

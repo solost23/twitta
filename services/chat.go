@@ -89,7 +89,7 @@ func (s *Service) ChatList(c *gin.Context, id string, params *utils.PageForm) (*
 	logPrivateLatters, total, pages, err := dao.GPaginatorOrder[*dao.LogPrivateLatter](c, db, &dao.ListPageInput{
 		Page: params.Page,
 		Size: params.Size,
-	}, bson.M{"created_at": 1}, query)
+	}, bson.M{"created_at": -1}, query)
 	if err != nil {
 		return nil, err
 	}
