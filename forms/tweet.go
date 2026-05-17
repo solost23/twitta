@@ -9,16 +9,19 @@ type TweetCreateForm struct {
 }
 
 type Tweet struct {
-	UserId       string   `json:"userId"`
-	Username     string   `json:"username"`
-	Avatar       string   `json:"avatar"`
-	ID           string   `json:"id"`
-	Title        string   `json:"title"`
-	Content      string   `json:"content"`
-	Images       []string `json:"images"`
-	CreatedAt    string   `json:"createdAt"`
-	ThumbCount   int64    `json:"thumbCount"`
-	CommentCount int64    `json:"commentCount"`
+	UserId        string   `json:"userId"`
+	Username      string   `json:"username"`
+	Avatar        string   `json:"avatar"`
+	ID            string   `json:"id"`
+	Title         string   `json:"title"`
+	Content       string   `json:"content"`
+	Images        []string `json:"images"`
+	CreatedAt     string   `json:"createdAt"`
+	ThumbCount    int64    `json:"thumbCount"`
+	CommentCount  int64    `json:"commentCount"`
+	RetweetCount  int64    `json:"retweetCount"`
+	RetweetOf     string   `json:"retweetOf"`
+	OriginTweet   *Tweet   `json:"originTweet,omitempty"`
 }
 
 type TweetList struct {

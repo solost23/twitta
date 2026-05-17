@@ -205,3 +205,31 @@ func tweetSearch(c *gin.Context) {
 
 	response.Success(c, result)
 }
+
+func tweetDetail(c *gin.Context) {
+	UIdForm := &utils.UIdForm{}
+	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	result, err := services.NewService().TweetDetail(c, UIdForm.Id)
+	if err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.Success(c, result)
+}
+
+func tweetRetweet(c *gin.Context) {
+	UIdForm := &utils.UIdForm{}
+	if err := utils.GetValidUriParams(c, UIdForm); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	if err := services.NewService().TweetRetweet(c, UIdForm.Id); err != nil {
+		response.Error(c, 2001, err)
+		return
+	}
+	response.MessageSuccess(c, "转发成功", nil)
+}
+

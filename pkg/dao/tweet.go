@@ -14,8 +14,10 @@ type Tweet struct {
 	Title        string             `json:"title" bson:"title,omitempty" comment:"标题"`
 	Content      string             `json:"content" bson:"content,omitempty" comment:"内容"`
 	Images       []string           `json:"images" bson:"images,omitempty" comment:"图片/视频 URL 列表"`
-	ThumbCount   int64              `json:"thumbCount" bson:"thumb_count,omitempty" comment:"点赞数"`
-	CommentCount int64              `json:"commentCount" bson:"comment_count,omitempty" comment:"评论数"`
+	ThumbCount    int64              `json:"thumbCount" bson:"thumb_count,omitempty" comment:"点赞数"`
+	CommentCount  int64              `json:"commentCount" bson:"comment_count,omitempty" comment:"评论数"`
+	RetweetCount  int64              `json:"retweetCount" bson:"retweet_count,omitempty" comment:"转发数"`
+	RetweetOf     string             `json:"retweetOf" bson:"retweet_of,omitempty" comment:"原推文ID，非空则为转发"`
 }
 
 //	func NewTweet() *Tweet {

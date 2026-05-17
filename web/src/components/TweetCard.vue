@@ -8,24 +8,60 @@
       </div>
       <el-button v-if="isOwn" link :icon="Delete" @click="deleteTweet" />
     </div>
-    <div v-if="tweet.title" class="title">{{ tweet.title }}</div>
-    <div class="content">{{ tweet.content }}</div>
-    <div v-if="tweet.images?.length" class="images">
-      <el-image
-        v-for="(img, i) in tweet.images" :key="i"
-        :src="ossUrl(img)"
-        :preview-src-list="tweet.images.map(ossUrl)"
-        :initial-index="i"
-        fit="cover"
-        class="thumb-img"
-      />
+
+    <!-- 转发标记 -->
+    <div v-if="tweet.retweetOf" class="retweet-label">
+      <el-icon><RefreshRight /></el-icon> 转发了一条推文
     </div>
+
+    <template v-if="!tweet.retweetOf">
+      <div v-if="tweet.title" class="title" @click="goDetail" style="cursor:pointer">{{ tweet.title }}</div>
+      <div class="content" @click="goDetail" style="cursor:pointer">{{ tweet.content }}</div>
+      <div v-if="tweet.images?.length" class="images">
+        <el-image
+          v-for="(img, i) in tweet.images" :key="i"
+          :src="ossUrl(img)"
+          :preview-src-list="tweet.images.map(ossUrl)"
+          :initial-index="i"
+          fit="cover"
+          class="thumb-img"
+        />
+      </div>
+    </template>
+
+    <!-- 原推文引用块（转发时展示） -->
+    <div v-if="tweet.retweetOf && tweet.originTweet" class="origin-tweet" @click="goOriginDetail" style="cursor:pointer">
+      <div class="origin-header">
+        <el-avatar :src="ossUrl(tweet.originTweet.avatar)" :size="20" />
+        <span class="origin-username">{{ tweet.originTweet.username }}</span>
+        <span class="time">{{ tweet.originTweet.createdAt }}</span>
+      </div>
+      <div v-if="tweet.originTweet.title" class="origin-title">{{ tweet.originTweet.title }}</div>
+      <div class="origin-content">{{ tweet.originTweet.content }}</div>
+      <div v-if="tweet.originTweet.images?.length" class="images">
+        <el-image
+          v-for="(img, i) in tweet.originTweet.images" :key="i"
+          :src="ossUrl(img)"
+          :preview-src-list="tweet.originTweet.images.map(ossUrl)"
+          :initial-index="i"
+          fit="cover"
+          class="thumb-img"
+        />
+      </div>
+    </div>
+    <div v-else-if="tweet.retweetOf && !tweet.originTweet" class="origin-tweet origin-deleted">
+      原推文已删除
+    </div>
+
     <div class="actions">
       <el-button link :class="{ liked }" @click="toggleThumb">
         <el-icon><Pointer /></el-icon> {{ localThumbCount }}
       </el-button>
       <el-button link @click="toggleComments">
         <el-icon><ChatLineRound /></el-icon> {{ localCommentCount }}
+      </el-button>
+      <el-button link @click="doRetweet">
+        <el-icon><RefreshRight /></el-icon> {{ localRetweetCount }}
       </el-button>
       <el-button link @click="toggleFavorite">
         <el-icon><Star /></el-icon> {{ favorited ? '已收藏' : '收藏' }}
@@ -50,7 +86,7 @@
         v-for="c in comments"
         :key="c.id"
         :comment="c"
-        :tweet-id="tweet.id"
+        :tweet-id="tweetId"
         @replied="loadComments"
         @deleted="onCommentDeleted"
       />
@@ -64,7 +100,7 @@ import { useRouter } from 'vue-router'
 import { tweetApi, type Tweet, type Comment } from '@/api/tweet'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Pointer, ChatLineRound, Star } from '@element-plus/icons-vue'
+import { Delete, Pointer, ChatLineRound, Star, RefreshRight } from '@element-plus/icons-vue'
 import CommentItem from './CommentItem.vue'
 
 const props = defineProps<{ tweet: Tweet }>()
@@ -81,7 +117,10 @@ const liked = ref(false)
 const favorited = ref(false)
 const localThumbCount = ref(props.tweet.thumbCount)
 const localCommentCount = ref(props.tweet.commentCount)
+const localRetweetCount = ref(props.tweet.retweetCount ?? 0)
 
+// 转发时评论/点赞操作针对原推文
+const tweetId = computed(() => props.tweet.retweetOf || props.tweet.id)
 const isOwn = computed(() => auth.user?.id === props.tweet.userId)
 
 function ossUrl(path: string) {
@@ -91,6 +130,10 @@ function ossUrl(path: string) {
 }
 
 function goUser() { router.push(`/user/${props.tweet.userId}`) }
+function goDetail() { router.push(`/tweet/${props.tweet.id}`) }
+function goOriginDetail() {
+  if (props.tweet.originTweet) router.push(`/tweet/${props.tweet.originTweet.id}`)
+}
 
 async function deleteTweet() {
   await ElMessageBox.confirm('确认删除这条推文？', '提示', { type: 'warning' })
@@ -101,11 +144,11 @@ async function deleteTweet() {
 
 async function toggleThumb() {
   if (liked.value) {
-    await tweetApi.unthumb(props.tweet.id)
+    await tweetApi.unthumb(tweetId.value)
     liked.value = false
     localThumbCount.value--
   } else {
-    await tweetApi.thumb(props.tweet.id)
+    await tweetApi.thumb(tweetId.value)
     liked.value = true
     localThumbCount.value++
   }
@@ -123,6 +166,16 @@ async function toggleFavorite() {
   }
 }
 
+async function doRetweet() {
+  try {
+    await tweetApi.retweet(tweetId.value)
+    localRetweetCount.value++
+    ElMessage.success('转发成功')
+  } catch (e: any) {
+    ElMessage.warning(e?.message || '转发失败')
+  }
+}
+
 async function toggleComments() {
   showComments.value = !showComments.value
   if (showComments.value && !comments.value.length) await loadComments()
@@ -131,7 +184,7 @@ async function toggleComments() {
 async function loadComments() {
   loading.value = true
   try {
-    const res = await tweetApi.commentList(props.tweet.id)
+    const res = await tweetApi.commentList(tweetId.value)
     comments.value = res.records ?? []
   } finally {
     loading.value = false
@@ -142,7 +195,7 @@ async function submitComment() {
   if (!commentText.value.trim()) return
   submitting.value = true
   try {
-    await tweetApi.comment(props.tweet.id, commentText.value)
+    await tweetApi.comment(tweetId.value, commentText.value)
     commentText.value = ''
     localCommentCount.value++
     await loadComments()
@@ -164,10 +217,19 @@ function onCommentDeleted() {
 .username { font-weight: 600; font-size: 14px; cursor: pointer; }
 .username:hover { color: #1da1f2; }
 .time { font-size: 12px; color: #999; }
+.retweet-label { font-size: 12px; color: #999; display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
 .title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.title:hover, .content:hover { color: #1da1f2; }
 .content { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
 .images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .thumb-img { width: 120px; height: 120px; border-radius: 6px; cursor: pointer; }
+.origin-tweet { border: 1px solid #e4e7ed; border-radius: 8px; padding: 10px 12px; margin-top: 8px; background: #fafafa; }
+.origin-tweet:hover { background: #f0f7ff; }
+.origin-deleted { color: #bbb; font-size: 13px; }
+.origin-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.origin-username { font-weight: 600; font-size: 13px; }
+.origin-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.origin-content { font-size: 13px; color: #555; white-space: pre-wrap; }
 .actions { display: flex; gap: 16px; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
 .actions .liked { color: #1da1f2; }
 .comments { margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 8px; }

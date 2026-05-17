@@ -4,6 +4,7 @@ export interface Tweet {
   id: string; userId: string; username: string; avatar: string
   title: string; content: string; images: string[]
   createdAt: string; thumbCount: number; commentCount: number
+  retweetCount: number; retweetOf: string; originTweet?: Tweet
 }
 export interface TweetList { records: Tweet[]; total: number; pages: number; size: number; current: number }
 export interface Comment {
@@ -15,6 +16,7 @@ export const tweetApi = {
   list: (page = 1, size = 10) =>
     http.get<any, TweetList>('/tweets', { params: { page, size } }),
   ownList: () => http.get<any, TweetList>('/tweets/own'),
+  detail: (id: string) => http.get<any, Tweet>(`/tweets/${id}`),
   send: (data: { title: string; content: string; images?: string[] }) =>
     http.post<any, void>('/tweets', data),
   uploadStatic: (file: File) => {
@@ -22,6 +24,7 @@ export const tweetApi = {
     return http.post<any, string>('/tweets/static', fd)
   },
   delete: (id: string) => http.delete<any, void>(`/tweets/${id}`),
+  retweet: (id: string) => http.post<any, void>(`/tweets/${id}/retweet`),
   search: (keyword: string, page = 1, size = 10) =>
     http.get<any, TweetList>('/tweets/search', { params: { keyword, page, size } }),
   favorite: (id: string) => http.post<any, void>('/tweets/favorite', { id }),

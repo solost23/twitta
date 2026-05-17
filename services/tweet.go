@@ -105,39 +105,18 @@ func (*Service) TweetList(c *gin.Context, params *utils.PageForm) (*forms.TweetL
 	if err != nil {
 		return nil, err
 	}
-	userIds := make([]string, 0, len(tweets))
-	for _, tweet := range tweets {
-		userIds = append(userIds, tweet.UserID)
-	}
-	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
+	userOids := parseObjectIDs(collectStrings(tweets, func(t *dao.Tweet) string { return t.UserID }))
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userOids}})
 	if err != nil {
 		return nil, err
 	}
-	userIdToInfoMaps := make(map[string]struct {
-		Username string
-		Avatar   string
-	}, len(users))
-	for _, user := range users {
-		userIdToInfoMaps[user.ID.String()] = struct {
-			Username string
-			Avatar   string
-		}{Username: user.Username, Avatar: user.Avatar}
-	}
+	userMap := buildUserMap(users)
 	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		records = append(records, &forms.Tweet{
-			UserId:       tweet.UserID,
-			Username:     userIdToInfoMaps[tweet.UserID].Username,
-			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			ID:           tweet.ID.String(),
-			Title:        tweet.Title,
-			Content:      tweet.Content,
-			Images:       tweet.Images,
-			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
-			ThumbCount:   tweet.ThumbCount,
-			CommentCount: tweet.CommentCount,
-		})
+		u := userMap[tweet.UserID]
+		records = append(records, tweetToForm(tweet, u.Username, u.Avatar))
 	}
+	fillOriginTweets(c, db, records)
 	result := &forms.TweetList{
 		PageList: utils.PageList{
 			Size:    params.Size,
@@ -160,19 +139,9 @@ func (*Service) TweetOwnList(c *gin.Context) (*forms.TweetList, error) {
 	}
 	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		records = append(records, &forms.Tweet{
-			UserId:       user.ID.String(),
-			Username:     user.Username,
-			Avatar:       user.Avatar,
-			ID:           tweet.ID.String(),
-			Title:        tweet.Title,
-			Content:      tweet.Content,
-			Images:       tweet.Images,
-			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
-			ThumbCount:   tweet.ThumbCount,
-			CommentCount: tweet.CommentCount,
-		})
+		records = append(records, tweetToForm(tweet, user.Username, user.Avatar))
 	}
+	fillOriginTweets(c, db, records)
 
 	result := &forms.TweetList{
 		Records: records,
@@ -188,48 +157,23 @@ func (*Service) TweetFavoriteList(c *gin.Context) (*forms.TweetList, error) {
 	if err != nil {
 		return nil, err
 	}
-	tweetIds := make([]string, 0, len(favorites))
-	for _, favorite := range favorites {
-		tweetIds = append(tweetIds, favorite.TweetId)
-	}
-	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"_id": bson.M{"$in": tweetIds}})
+	tweetOids := parseObjectIDs(collectStrings(favorites, func(f *dao.Favorite) string { return f.TweetId }))
+	tweets, err := dao.GWhereFind[*dao.Tweet](c, db, bson.M{"_id": bson.M{"$in": tweetOids}})
 	if err != nil {
 		return nil, err
 	}
-	userIds := make([]string, 0, len(tweets))
-	for _, tweet := range tweets {
-		userIds = append(userIds, tweet.UserID)
-	}
-	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userIds}})
+	userOids := parseObjectIDs(collectStrings(tweets, func(t *dao.Tweet) string { return t.UserID }))
+	users, err := dao.GWhereFind[*dao.User](c, db, bson.M{"_id": bson.M{"$in": userOids}})
 	if err != nil {
 		return nil, err
 	}
-	userIdToInfoMaps := make(map[string]struct {
-		Username string
-		Avatar   string
-	}, len(users))
-	for _, user := range users {
-		userIdToInfoMaps[user.ID.String()] = struct {
-			Username string
-			Avatar   string
-		}{Username: user.Username, Avatar: user.Avatar}
-	}
-	// 封装数据返回
+	userMap := buildUserMap(users)
 	records := make([]*forms.Tweet, 0, len(tweets))
 	for _, tweet := range tweets {
-		records = append(records, &forms.Tweet{
-			UserId:       tweet.UserID,
-			Username:     userIdToInfoMaps[tweet.UserID].Username,
-			Avatar:       userIdToInfoMaps[tweet.UserID].Avatar,
-			ID:           tweet.ID.String(),
-			Title:        tweet.Title,
-			Content:      tweet.Content,
-			Images:       tweet.Images,
-			CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
-			ThumbCount:   tweet.ThumbCount,
-			CommentCount: tweet.CommentCount,
-		})
+		u := userMap[tweet.UserID]
+		records = append(records, tweetToForm(tweet, u.Username, u.Avatar))
 	}
+	fillOriginTweets(c, db, records)
 
 	result := &forms.TweetList{
 		Records: records,
@@ -317,3 +261,94 @@ func (*Service) TweetSearch(c *gin.Context, params *forms.SearchForm) (*forms.Tw
 	}
 	return result, nil
 }
+
+func tweetToForm(tweet *dao.Tweet, username, avatar string) *forms.Tweet {
+	return &forms.Tweet{
+		UserId:       tweet.UserID,
+		Username:     username,
+		Avatar:       avatar,
+		ID:           tweet.ID.String(),
+		Title:        tweet.Title,
+		Content:      tweet.Content,
+		Images:       tweet.Images,
+		CreatedAt:    tweet.CreatedAt.Format(time.DateTime),
+		ThumbCount:   tweet.ThumbCount,
+		CommentCount: tweet.CommentCount,
+		RetweetCount: tweet.RetweetCount,
+		RetweetOf:    tweet.RetweetOf,
+	}
+}
+
+func (*Service) TweetDetail(c *gin.Context, id string) (*forms.Tweet, error) {
+	oid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return nil, errors.New("无效推文ID")
+	}
+	db := global.DB
+	tweet, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": oid})
+	if err != nil {
+		return nil, err
+	}
+	authorOid, err := utils.ParseObjectID(tweet.UserID)
+	if err != nil {
+		return nil, errors.New("无效用户ID")
+	}
+	author, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": authorOid})
+	if err != nil {
+		return nil, err
+	}
+	result := tweetToForm(tweet, author.Username, author.Avatar)
+
+	if tweet.RetweetOf != "" {
+		originOid, err := utils.ParseObjectID(tweet.RetweetOf)
+		if err == nil {
+			origin, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": originOid})
+			if err == nil {
+				originAuthorOid, err := utils.ParseObjectID(origin.UserID)
+				if err == nil {
+					originAuthor, err := dao.GWhereFirst[*dao.User](c, db, bson.M{"_id": originAuthorOid})
+					if err == nil {
+						result.OriginTweet = tweetToForm(origin, originAuthor.Username, originAuthor.Avatar)
+					}
+				}
+			}
+		}
+	}
+	return result, nil
+}
+
+func (*Service) TweetRetweet(c *gin.Context, id string) error {
+	user := utils.GetUser(c)
+
+	oid, err := utils.ParseObjectID(id)
+	if err != nil {
+		return errors.New("无效推文ID")
+	}
+	db := global.DB
+	origin, err := dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"_id": oid})
+	if err != nil {
+		return errors.New("推文不存在")
+	}
+	// 不允许重复转发同一条
+	_, err = dao.GWhereFirst[*dao.Tweet](c, db, bson.M{"user_id": user.ID.String(), "retweet_of": id})
+	if err == nil {
+		return errors.New("您已转发过这条推文")
+	}
+	if !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+
+	data := &dao.Tweet{
+		ID:        primitive.NewObjectID(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID.String(),
+		RetweetOf: id,
+	}
+	if err = dao.GInsertOne[*dao.Tweet](c, db, data); err != nil {
+		return err
+	}
+	_, err = dao.GWhereUpdate[*dao.Tweet](c, db, bson.M{"_id": origin.ID}, bson.M{"$inc": bson.M{"retweet_count": 1}})
+	return err
+}
+

@@ -16,6 +16,7 @@ const router = createRouter({
         { path: 'search', component: () => import('@/views/tweet/SearchView.vue') },
         { path: 'favorites', component: () => import('@/views/tweet/FavoritesView.vue') },
         { path: 'own', component: () => import('@/views/tweet/OwnTweetsView.vue') },
+        { path: 'tweet/:id', component: () => import('@/views/tweet/TweetDetailView.vue') },
         { path: 'profile', component: () => import('@/views/user/ProfileView.vue') },
         { path: 'user/:id', component: () => import('@/views/user/UserDetailView.vue') },
         { path: 'friends', component: () => import('@/views/friend/FriendsView.vue') },
